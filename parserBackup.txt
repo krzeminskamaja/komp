@@ -1,0 +1,60 @@
+
+// Uwaga: W wywołaniu generatora gppg należy użyć opcji /gplex
+
+%namespace GardensPoint
+
+
+%union
+{
+public string  val;
+public char    type;
+}
+
+%token Endl Eof Error Sc IdentInt IdentDou IdentBoo  Write
+%token <val> ProgramStart ProgramEnd Var Print
+%type <type> wrap cont err dek prnt
+
+%%
+
+start     : start wrap { Console.WriteLine("Jestem w produkcji start1"); ++lineno; }
+          | wrap {  Console.WriteLine("Jestem w produkcji start2");  ++lineno; } 
+		  | Endl Eof { Console.WriteLine("  line {0,3}:  syntax error",lineno); Compiler.errors++; } 
+		  | Eof { Console.WriteLine("  line {0,3}:  syntax error",lineno); Compiler.errors++; } 
+          ;
+wrap	  : ProgramStart cont ProgramEnd Endl Eof { Console.WriteLine("Jestem w produkcji wrap1");} 
+		  | ProgramStart cont ProgramEnd Eof { Console.WriteLine("Jestem w produkcji wrap2");} 
+		  | err
+		  ;
+cont	  : dek 
+		  | prnt 
+		  | Endl
+		  ;
+dek		  : idf Var Sc cont { Compiler.EmitCode("stloc {0}",$2); 
+							Compiler.EmitCode("ldstr \"Dodano zmienna {0}\"");
+							Compiler.EmitCode("ldloc {0}",$2); 
+							Compiler.EmitCode("call instance string [mscorlib] System.Int32::ToString()") ;
+							Compiler.EmitCode("call void [mscorlib]System.Console::WriteLine(string,object)");  
+							Compiler.EmitCode("");}
+		  | idf Var Sc { Compiler.EmitCode("stloc {0}",$2); 
+					Compiler.EmitCode("ldstr \"Dodano zmienna {0}\""); 
+					Compiler.EmitCode("ldloc {0}",$2); 
+					Compiler.EmitCode("call instance string [mscorlib] System.Int32::ToString()") ;
+					Compiler.EmitCode("call void [mscorlib]System.Console::WriteLine(string,object)");  
+					Compiler.EmitCode("");}
+		  |
+		  ;
+prnt	  : Print Var Sc cont { Compiler.EmitCode("ldloc {0}",$2); Compiler.EmitCode("call void [mscorlib]System.Console::WriteLine(object)"); Compiler.EmitCode("");}
+		  | Print Var Sc  { Compiler.EmitCode("ldloc {0}",$2); Compiler.EmitCode("call void [mscorlib]System.Console::WriteLine(object)"); Compiler.EmitCode("");}
+		  ;
+err		  : { Compiler.errors++; Console.WriteLine("  line {0,3}:  syntax error",lineno); } Error
+		  ;
+idf		  : {Console.WriteLine("jestem w prod idf int");} IdentInt { Compiler.EmitCode("ldc.i4 {0}",5);  } 
+		  | IdentDou { Compiler.EmitCode("ldc.r8 {0}",0);  }
+		  | IdentBoo { Compiler.EmitCode("ldc.i4 {0}",0);  }
+		  ;
+
+%%
+
+int lineno=1;
+
+public Parser(Scanner scanner) : base(scanner) { }

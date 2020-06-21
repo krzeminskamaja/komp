@@ -1,0 +1,8 @@
+program{
+int a;
+bool b;
+write a;
+write "\n";
+write b;
+write "\n";
+}
