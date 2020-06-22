@@ -2,7 +2,7 @@
 %using QUT.Gppg;
 %namespace GardensPoint
 
-Cmt "//"\.*[\n]
+Cmt "//".*[\n]
 Int [0-9]+
 Str \"([^\\\"\n]|\\.)*\"
 Dou  [0-9]+\.[0-9]+

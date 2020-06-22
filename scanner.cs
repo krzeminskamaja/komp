@@ -6,9 +6,9 @@
 //
 //  GPLEX Version:  1.2.2
 //  Machine:  DESKTOP-1T6954A
-//  DateTime: 22.06.2020 01:44:43
+//  DateTime: 22.06.2020 02:13:05
 //  UserName: Maya
-//  GPLEX input file <scanner.lex - 22.06.2020 01:44:23>
+//  GPLEX input file <scanner.lex - 22.06.2020 02:12:58>
 //  GPLEX frame file <embedded resource>
 //
 //  Option settings: parser, minimize
@@ -223,9 +223,7 @@ namespace GardensPoint
 /* NxS[  40] */ new Table(108, 1, -1, new sbyte[] {19}),
 /* NxS[  41] */ new Table(48, 10, -1, new sbyte[] {20, 20, 20, 20, 20, 20, 
           20, 20, 20, 20}),
-/* NxS[  42] */ new Table(10, 37, -1, new sbyte[] {21, -1, -1, -1, -1, -1, 
-          -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
-          -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 42}),
+/* NxS[  42] */ new Table(10, 1, 42, new sbyte[] {21}),
 /* NxS[  43] */ new Table(10, 1, 24, new sbyte[] {-1}),
     };
 
