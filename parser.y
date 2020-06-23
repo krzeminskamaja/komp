@@ -10,8 +10,8 @@ public string  val;
 public char    type;
 }
 
-%token  Program OpenBr CloseBr EOF Print Sc IntT DouT BooT 
-%type <type> content print dek idef
+%token  Program OpenBr CloseBr EOF Print Sc IntT DouT BooT Eq True False
+%type <type> content print dek idef expr 
 %token <val> Int Str Dou Var 
 
 %%
@@ -22,12 +22,13 @@ start	  : Program OpenBr content CloseBr EOF
 		  ;
 content   : print content
 		  | dek content
-		  | 
+		  | expr content
+		  |
 		  ;
-print	  : Print Int Sc { Compiler.EmitCode("ldc.i4 {0}",$2); Compiler.EmitCode("call void [mscorlib]System.Console::WriteLine(int32)"); Compiler.EmitCode("");}
-		  | Print Str Sc { Compiler.EmitCode("ldstr {0}",$2); Compiler.EmitCode("call void [mscorlib]System.Console::Write(string)"); Compiler.EmitCode(""); }
-		  | Print Dou Sc { Compiler.EmitCode("ldc.r8 {0}",$2); Compiler.EmitCode("call void [mscorlib]System.Console::WriteLine(float64)"); Compiler.EmitCode("");}
-		  | Print Var Sc { string namei="i_"+$2, nameb="b_"+$2,named="d_"+$2;
+print	  : Print Str Sc { 
+Compiler.EmitCode("ldstr {0}",$2); Compiler.EmitCode("call void [mscorlib]System.Console::WriteLine(string)"); Compiler.EmitCode("");
+						}
+		   | Print Var Sc { string namei="i_"+$2, nameb="b_"+$2,named="d_"+$2;
 									if(variables.Contains(namei))
 									{
 										Compiler.EmitCode("ldloc {0}",namei);
@@ -121,10 +122,38 @@ idef	  : IntT { $$ = 'i';}
 		  | BooT { $$ = 'b';} 
 		  ;
 
-
+expr	  : Var Eq expr Sc { string namei="i_"+$1, nameb="b_"+$1,named="d_"+$1;
+							if(variables.Contains(namei))
+							{
+								Compiler.EmitCode("stloc i_{0}",$1);
+								Compiler.EmitCode("");
+							}
+							else if(variables.Contains(nameb))
+							{
+								Compiler.EmitCode("stloc b_{0}",$1);
+								Compiler.EmitCode("");
+							}
+							else if(variables.Contains(named))
+							{
+								Compiler.EmitCode("stloc d_{0}",$1);
+								Compiler.EmitCode("");
+							}
+							else
+							{
+								yyerrok(); Console.WriteLine("undeclared variable {0}",$2); Compiler.errors++;
+							}
+						}
+		  | Var { Compiler.EmitCode("ldloc {0}",$1); }
+		  | Int { Compiler.EmitCode("ldc.i4 {0}",$1); }
+		  | Dou { Compiler.EmitCode("ldc.r8 {0}",$1); }
+		  | True { Compiler.EmitCode("ldc.i4.s {0}", 1); }
+		  | False { Compiler.EmitCode("ldc.i4.s {0}", 0); }
+		  ;
 %%
 
 int lineno=1;
+
+
 
 public Parser(Scanner scanner) : base(scanner) { }
 

@@ -8,17 +8,17 @@
 
 // prolog
 
-.locals init (int32 i_a)
-ldc.i4 0
-stloc i_a
-ldloc i_a
-call void [mscorlib]System.Console::WriteLine(int32)
+.locals init (bool b_b)
+ldc.i4.s 0
+stloc b_b
+ldloc b_b
+call void [mscorlib]System.Console::WriteLine(bool)
 
-ldc.i4 5
-stloc i_a
+ldc.i4.s 1
+stloc b_b
 
-ldloc i_a
-call void [mscorlib]System.Console::Write(int32)
+ldloc b_b
+call void [mscorlib]System.Console::Write(bool)
 
 leave EndMain
 }

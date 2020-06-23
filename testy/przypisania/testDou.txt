@@ -1,0 +1,5 @@
+program{
+	double d;
+	d=0.4;
+	write d;
+}

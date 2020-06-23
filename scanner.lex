@@ -21,9 +21,12 @@ Var [a-z]
 "bool"				{ return (int)Tokens.BooT; }
 "program"			{ return (int)Tokens.Program; }
 "write"				{ return (int)Tokens.Print; }
+"true"				{ return (int)Tokens.True; }
+"false"				{ return (int)Tokens.False; }
 "{"					{ return (int)Tokens.OpenBr; }
 "}"					{ return (int)Tokens.CloseBr; }
 ";"					{ return (int)Tokens.Sc; }
+"="					{ return (int)Tokens.Eq; }
 <<EOF>>				{ return (int)Tokens.EOF; }
 " "					{ }
 "\n"				{ }
