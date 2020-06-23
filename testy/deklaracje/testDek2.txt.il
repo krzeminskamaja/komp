@@ -20,6 +20,12 @@ stloc b_b
 ldloc b_b
 call void [mscorlib]System.Console::WriteLine(bool)
 
+.locals init (float64 d_d)
+ldc.r8 0
+stloc d_d
+ldloc d_d
+call void [mscorlib]System.Console::WriteLine(float64)
+
 ldloc i_a
 call void [mscorlib]System.Console::Write(int32)
 
@@ -31,6 +37,9 @@ call void [mscorlib]System.Console::Write(bool)
 
 ldstr "\n"
 call void [mscorlib]System.Console::Write(string)
+
+ldloc d_d
+call void [mscorlib]System.Console::Write(float64)
 
 leave EndMain
 }

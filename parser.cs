@@ -4,9 +4,9 @@
 
 // GPPG version 1.5.2
 // Machine:  DESKTOP-1T6954A
-// DateTime: 22.06.2020 02:13:06
+// DateTime: 23.06.2020 14:31:28
 // UserName: Maya
-// Input file <parser.y - 22.06.2020 01:58:20>
+// Input file <parser.y - 23.06.2020 14:31:24>
 
 // options: lines gplex
 
@@ -147,12 +147,12 @@ public class Parser: ShiftReduceParser<ValueType, LexLocation>
         break;
       case 10: // print -> Print, Dou, Sc
 #line 29 "parser.y"
-                   { Compiler.EmitCode("ldc.r8 {0}",ValueStack[ValueStack.Depth-2].val); Compiler.EmitCode("call void [mscorlib]System.Console::WriteLine(string)"); Compiler.EmitCode("");}
+                   { Compiler.EmitCode("ldc.r8 {0}",ValueStack[ValueStack.Depth-2].val); Compiler.EmitCode("call void [mscorlib]System.Console::WriteLine(float64)"); Compiler.EmitCode("");}
 #line default
         break;
       case 11: // print -> Print, Var, Sc
 #line 30 "parser.y"
-                   { string namei="i_"+ValueStack[ValueStack.Depth-2].val, nameb="b_"+ValueStack[ValueStack.Depth-2].val;
+                   { string namei="i_"+ValueStack[ValueStack.Depth-2].val, nameb="b_"+ValueStack[ValueStack.Depth-2].val,named="d_"+ValueStack[ValueStack.Depth-2].val;
 									if(variables.Contains(namei))
 									{
 										Compiler.EmitCode("ldloc {0}",namei);
@@ -163,6 +163,12 @@ public class Parser: ShiftReduceParser<ValueType, LexLocation>
 									{
 										Compiler.EmitCode("ldloc {0}",nameb);
 													Compiler.EmitCode("call void [mscorlib]System.Console::Write(bool)"); 
+													Compiler.EmitCode("");
+									}
+									else if(variables.Contains(named))
+									{
+										Compiler.EmitCode("ldloc {0}",named);
+													Compiler.EmitCode("call void [mscorlib]System.Console::Write(float64)"); 
 													Compiler.EmitCode("");
 									}
 									else
@@ -176,12 +182,12 @@ public class Parser: ShiftReduceParser<ValueType, LexLocation>
 #line default
         break;
       case 12: // print -> Print, error
-#line 51 "parser.y"
+#line 57 "parser.y"
                   { yyerrok();  Compiler.errors++;}
 #line default
         break;
       case 13: // dek -> idef, Var, Sc
-#line 53 "parser.y"
+#line 59 "parser.y"
                      { string name = "";
 									switch(ValueStack[ValueStack.Depth-3].type){
 									
@@ -221,14 +227,17 @@ public class Parser: ShiftReduceParser<ValueType, LexLocation>
 
 									break;
 									case 'd':
-									//to nie dziala
-										if(!variables.Contains(ValueStack[ValueStack.Depth-2].val)){
-										Compiler.EmitCode(".locals init (double64 {0})",ValueStack[ValueStack.Depth-2].val);
+										name = "d_"+ValueStack[ValueStack.Depth-2].val;
+										if(!variables.Contains(name)){
+										Compiler.EmitCode(".locals init (float64 d_{0})",ValueStack[ValueStack.Depth-2].val);
 										Compiler.EmitCode("ldc.r8 {0}",0);
-										Compiler.EmitCode("stloc {0}",ValueStack[ValueStack.Depth-2].val);
-										Compiler.EmitCode("ldloc {0}",ValueStack[ValueStack.Depth-2].val);
-										Compiler.EmitCode("call void [mscorlib]System.Console::WriteLine(double64)"); 
+										Compiler.EmitCode("stloc d_{0}",ValueStack[ValueStack.Depth-2].val);
+										Compiler.EmitCode("ldloc d_{0}",ValueStack[ValueStack.Depth-2].val);
+										Compiler.EmitCode("call void [mscorlib]System.Console::WriteLine(float64)"); 
 										Compiler.EmitCode("");
+										
+										variables.Add(name);
+										Console.WriteLine("dodane variable {0}",name);
 										}
 										else{
 											yyerrok(); Console.WriteLine("variable already declared"); Compiler.errors++;
@@ -241,17 +250,17 @@ public class Parser: ShiftReduceParser<ValueType, LexLocation>
 #line default
         break;
       case 14: // idef -> IntT
-#line 110 "parser.y"
+#line 119 "parser.y"
               { CurrentSemanticValue.type = 'i';}
 #line default
         break;
       case 15: // idef -> DouT
-#line 111 "parser.y"
+#line 120 "parser.y"
            { CurrentSemanticValue.type = 'd';}
 #line default
         break;
       case 16: // idef -> BooT
-#line 112 "parser.y"
+#line 121 "parser.y"
            { CurrentSemanticValue.type = 'b';}
 #line default
         break;
@@ -269,7 +278,7 @@ public class Parser: ShiftReduceParser<ValueType, LexLocation>
         return CharToString((char)terminal);
   }
 
-#line 117 "parser.y"
+#line 126 "parser.y"
 
 int lineno=1;
 

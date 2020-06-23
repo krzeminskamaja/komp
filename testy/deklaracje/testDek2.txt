@@ -1,9 +1,11 @@
 program{
 int a;
 bool b;
+double d;
 write a;
 write "\n";
 write b;
 write "\n";
+write d;
 //hola chicos
 }

@@ -26,8 +26,8 @@ content   : print content
 		  ;
 print	  : Print Int Sc { Compiler.EmitCode("ldc.i4 {0}",$2); Compiler.EmitCode("call void [mscorlib]System.Console::WriteLine(int32)"); Compiler.EmitCode("");}
 		  | Print Str Sc { Compiler.EmitCode("ldstr {0}",$2); Compiler.EmitCode("call void [mscorlib]System.Console::Write(string)"); Compiler.EmitCode(""); }
-		  | Print Dou Sc { Compiler.EmitCode("ldc.r8 {0}",$2); Compiler.EmitCode("call void [mscorlib]System.Console::WriteLine(string)"); Compiler.EmitCode("");}
-		  | Print Var Sc { string namei="i_"+$2, nameb="b_"+$2;
+		  | Print Dou Sc { Compiler.EmitCode("ldc.r8 {0}",$2); Compiler.EmitCode("call void [mscorlib]System.Console::WriteLine(float64)"); Compiler.EmitCode("");}
+		  | Print Var Sc { string namei="i_"+$2, nameb="b_"+$2,named="d_"+$2;
 									if(variables.Contains(namei))
 									{
 										Compiler.EmitCode("ldloc {0}",namei);
@@ -38,6 +38,12 @@ print	  : Print Int Sc { Compiler.EmitCode("ldc.i4 {0}",$2); Compiler.EmitCode("
 									{
 										Compiler.EmitCode("ldloc {0}",nameb);
 													Compiler.EmitCode("call void [mscorlib]System.Console::Write(bool)"); 
+													Compiler.EmitCode("");
+									}
+									else if(variables.Contains(named))
+									{
+										Compiler.EmitCode("ldloc {0}",named);
+													Compiler.EmitCode("call void [mscorlib]System.Console::Write(float64)"); 
 													Compiler.EmitCode("");
 									}
 									else
@@ -89,14 +95,17 @@ dek		  : idef Var Sc { string name = "";
 
 									break;
 									case 'd':
-									//to nie dziala
-										if(!variables.Contains($2)){
-										Compiler.EmitCode(".locals init (double64 {0})",$2);
+										name = "d_"+$2;
+										if(!variables.Contains(name)){
+										Compiler.EmitCode(".locals init (float64 d_{0})",$2);
 										Compiler.EmitCode("ldc.r8 {0}",0);
-										Compiler.EmitCode("stloc {0}",$2);
-										Compiler.EmitCode("ldloc {0}",$2);
-										Compiler.EmitCode("call void [mscorlib]System.Console::WriteLine(double64)"); 
+										Compiler.EmitCode("stloc d_{0}",$2);
+										Compiler.EmitCode("ldloc d_{0}",$2);
+										Compiler.EmitCode("call void [mscorlib]System.Console::WriteLine(float64)"); 
 										Compiler.EmitCode("");
+										
+										variables.Add(name);
+										Console.WriteLine("dodane variable {0}",name);
 										}
 										else{
 											yyerrok(); Console.WriteLine("variable already declared"); Compiler.errors++;

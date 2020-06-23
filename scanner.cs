@@ -6,7 +6,7 @@
 //
 //  GPLEX Version:  1.2.2
 //  Machine:  DESKTOP-1T6954A
-//  DateTime: 22.06.2020 02:13:05
+//  DateTime: 23.06.2020 14:31:30
 //  UserName: Maya
 //  GPLEX input file <scanner.lex - 22.06.2020 02:12:58>
 //  GPLEX frame file <embedded resource>
