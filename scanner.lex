@@ -27,6 +27,12 @@ Var [a-z]
 "}"					{ return (int)Tokens.CloseBr; }
 ";"					{ return (int)Tokens.Sc; }
 "="					{ return (int)Tokens.Eq; }
+"+"					{ return (int)Tokens.Plus; }
+"-"					{ return (int)Tokens.Minus; }
+"*"					{ return (int)Tokens.Mult; }
+"/"					{ return (int)Tokens.Div; }
+"("					{ return (int)Tokens.OpenPar; }
+")"					{ return (int)Tokens.ClosePar; }
 <<EOF>>				{ return (int)Tokens.EOF; }
 " "					{ }
 "\n"				{ }

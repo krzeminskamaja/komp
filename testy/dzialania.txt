@@ -1,0 +1,13 @@
+program{
+	double i;
+	double j;
+	bool b;
+	i + 1;
+	write b;
+	write "\n";
+	i = (2  + 5) *3 ;
+	write i;
+	j = i - 0;
+	write "\n";
+	write j;
+}

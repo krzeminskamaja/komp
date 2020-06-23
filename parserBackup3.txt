@@ -1,15 +1,4 @@
 
-// ==========================================================================
-//  GPPG error listing for yacc source file <parser.y - 23.06.2020 19:16:55>
-// ==========================================================================
-//  Version:  1.5.2
-//  Machine:  DESKTOP-1T6954A
-//  DateTime: 23.06.2020 19:16:59
-//  UserName: Maya
-// ==========================================================================
-
-
-
 // Uwaga: W wywołaniu generatora gppg należy użyć opcji /gplex
 
 %namespace GardensPoint
@@ -21,16 +10,11 @@ public string  val;
 public char    type;
 }
 
-%token  Program OpenBr CloseBr EOF Print Sc IntT DouT BooT Eq True False Plus OpenPar ClosePar Minus Mult Div
-%type <type> content print dek idef exp asn term factor
+%token  Program OpenBr CloseBr EOF Print Sc IntT DouT BooT Eq True False Plus OpenPar ClosePar Minus
+%type <type> content print dek idef expr 
 %token <val> Int Str Dou Var 
 
 %%
-// Warning: Terminating content fixes the following size-1 NonTerminal set
-   // {content}
-// Error: There are 1 non-terminating NonTerminal Symbols
-   //  {content}
-// -----------------------------------------------------------------------
 
 start	  : Program OpenBr content CloseBr EOF
 		  | error EOF { yyerrok();  Compiler.errors++;}
@@ -38,8 +22,8 @@ start	  : Program OpenBr content CloseBr EOF
 		  ;
 content   : print content
 		  | dek content
-		  | asn content
-		  | exp content
+		  | expr content
+		  |
 		  ;
 print	  : Print Str Sc { 
 Compiler.EmitCode("ldstr {0}",$2); Compiler.EmitCode("call void [mscorlib]System.Console::WriteLine(string)"); Compiler.EmitCode("");
@@ -138,23 +122,97 @@ idef	  : IntT { $$ = 'i';}
 		  | BooT { $$ = 'b';} 
 		  ;
 
-asn	  : Var Eq exp Sc { string namei="i_"+$1, named="d_"+$1;
-							if(variables.Contains(namei) && $3!='i')
+asn	  : Var Eq exp Sc { string namei="i_"+$1, nameb="b_"+$1,named="d_"+$1;
+							if(variables.Contains(namei))
 							{
-								 Console.WriteLine("  line {0,3}:  semantic error - cannot convert double to int",lineno);
-								 ++Compiler.errors;
+								Compiler.EmitCode("stloc i_{0}",$1);
+								Compiler.EmitCode("");
+							}
+							else if(variables.Contains(nameb))
+							{
+								Compiler.EmitCode("stloc b_{0}",$1);
+								Compiler.EmitCode("");
 							}
 							else if(variables.Contains(named))
 							{
-								if($3!='r')Compiler.EmitCode("conv.r8");
-								Compiler.EmitCode("stloc named");
+								Compiler.EmitCode("stloc d_{0}",$1);
+								Compiler.EmitCode("");
 							}
-							else if(variables.Contains(namei))
+							else
 							{
-								if($3!='r')Compiler.EmitCode("conv.r8");
-								Compiler.EmitCode("stloc name");
+								yyerrok(); Console.WriteLine("undeclared variable {0}",$2); Compiler.errors++;
 							}
 						}
+		  | expr Plus { if($1=='i')
+						{
+							name = "i_temp";
+										if(!variables.Contains(name)){
+											Compiler.EmitCode(".locals init (int32 {0})",name);
+											variables.Add(name);
+											Console.WriteLine("dodane variable {0}",name);
+										}
+										Compiler.EmitCode("stloc {0}",name);
+											Compiler.EmitCode("");
+											czyInt = true;
+
+						}
+						else if($1=='d')
+						{	
+							name = "d_temp";
+										if(!variables.Contains(name)){
+											Compiler.EmitCode(".locals init (float64 {0})",name);
+											variables.Add(name);
+											Console.WriteLine("dodane variable {0}",name);
+										}
+										Compiler.EmitCode("stloc {0}",name);
+											Compiler.EmitCode("");
+											czyInt = false;
+						}
+						else
+						{
+							//czy tu cos robimy??
+						}
+						} expr 
+						{
+							if($4=='i')
+							{
+								if(czInt){
+									Compiler.EmitCode("ldc.i4 {0}",tempI);
+									Compiler.EmitCode("");
+									 $$ = 'i';
+								 }
+								 else
+							}
+							else if($4=='d')
+							{	
+								tempD = tempD + double.Parse($1,System.Globalization.CultureInfo.InvariantCulture) ;
+								Compiler.EmitCode("ldc.r8 {0}",$1); Compiler.EmitCode(""); 
+								 $$ = 'd';
+							}
+							else
+							{
+								//czy tu cos robimy??
+							}
+						}
+		  | Var { Compiler.EmitCode("ldloc {0}",$1); string namei="i_"+$1, named="d_"+$1; 
+				  if(variables.Contains(namei))
+				  {
+					 $$ = 'i';
+				  }
+				  else if(variables.Contains(named))
+				  {
+					$$ = 'd'; 
+				  }
+				  else
+				  {
+					 yyerrok(); Console.WriteLine("wrong instruction"); Compiler.errors++; YYABORT;
+				  }
+		  }
+		  | Int { tempI = int.Parse($1);  $$ = 'i'; }
+		  | Dou { tempD = double.Parse($2); $$ = 'd'; }
+		  | True { Compiler.EmitCode("ldc.i4.s {0}", 1); Compiler.EmitCode("");}
+		  | False { Compiler.EmitCode("ldc.i4.s {0}", 0); Compiler.EmitCode("");}
+		  | error { yyerrok(); Console.WriteLine("wrong instruction"); Compiler.errors++; YYABORT;  }
 		  ;
 
 
@@ -166,10 +224,10 @@ exp       : exp Plus term
                { $$ = $1; }
           ;
 
-term      : term Mult factor
-               { $$ = BinaryOpGenCode(Tokens.Mult, $1, $3); }
-          | term Div factor
-               { $$ = BinaryOpGenCode(Tokens.Div, $1, $3); }
+term      : term Multiplies factor
+               { $$ = BinaryOpGenCode(Tokens.Multiplies, $1, $3); }
+          | term Divides factor
+               { $$ = BinaryOpGenCode(Tokens.Divides, $1, $3); }
           | factor
                { $$ = $1; }
           ;
@@ -185,12 +243,12 @@ factor    : OpenPar exp ClosePar
                {
                double d = double.Parse($1,System.Globalization.CultureInfo.InvariantCulture) ;
                Compiler.EmitCode(string.Format(System.Globalization.CultureInfo.InvariantCulture,"ldc.r8 {0}",d));
-               $$ = 'd'; 
+               $$ = 'r'; 
                }
           | Var
                {
-               Compiler.EmitCode("ldloc _{0}{1}", $1[0]=='@'?'i':'d', $1[1]);
-               $$ = $1[0]=='@'?'i':'d';
+               Compiler.EmitCode("ldloc _{0}{1}", $1[0]=='@'?'i':'r', $1[1]);
+               $$ = $1[0]=='@'?'i':'r';
                }
           ;
 
@@ -234,5 +292,4 @@ private char BinaryOpGenCode(Tokens t, char type1, char type2)
             break;
         }
     return type;
-    }// ==========================================================================
-
+    }
