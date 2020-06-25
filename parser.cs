@@ -4,9 +4,9 @@
 
 // GPPG version 1.5.2
 // Machine:  DESKTOP-1T6954A
-// DateTime: 25.06.2020 02:02:58
+// DateTime: 25.06.2020 02:30:57
 // UserName: Maya
-// Input file <parser.y - 25.06.2020 02:02:52>
+// Input file <parser.y - 25.06.2020 02:30:53>
 
 // options: lines gplex
 
@@ -575,9 +575,19 @@ string name = "";
       case 38: // log -> rel, Anon@1, LogSum, rel
 #line 253 "parser.y"
      { 
+					Random r = new Random();
+					int n = 0;
+					while(Compiler.labelSet.Contains(n) || n<1)
+						n=r.Next();
+					Compiler.labelSet.Add(n);
+					 Compiler.labelFalse = "IL_"+n.ToString();
+
 					 Compiler.EmitCode("brtrue {0}",Compiler.labelTrue); 
-					  Compiler.EmitCode("{0}: ldc.i4.s 1",Compiler.labelTrue);
 					 Compiler.EmitCode("ldc.i4.s 0"); 
+					  Compiler.EmitCode("br {0}",Compiler.labelFalse);
+					  Compiler.EmitCode("{0}: ldc.i4.s 1",Compiler.labelTrue);
+					 
+					 Compiler.EmitCode("{0}: nop", Compiler.labelFalse);
 					
 					
 					
@@ -585,7 +595,7 @@ string name = "";
 #line default
         break;
       case 39: // Anon@2 -> /* empty */
-#line 261 "parser.y"
+#line 271 "parser.y"
           {	Random r = new Random();
 					int n = 0;
 					while(Compiler.labelSet.Contains(n) || n<1)
@@ -598,17 +608,27 @@ string name = "";
 #line default
         break;
       case 40: // log -> rel, Anon@2, LogInt, rel
-#line 271 "parser.y"
+#line 281 "parser.y"
      { 
+					Random r = new Random();
+					int n = 0;
+					while(Compiler.labelSet.Contains(n) || n<1)
+						n=r.Next();
+					Compiler.labelSet.Add(n);
+					 Compiler.labelTrue= "IL_"+n.ToString();
+
 					Compiler.EmitCode("brfalse {0}", Compiler.labelFalse); 
-					Compiler.EmitCode("{0}: ldc.i4.s 0",Compiler.labelFalse);
 					Compiler.EmitCode("ldc.i4.s 1"); 
+					Compiler.EmitCode("br {0}",Compiler.labelTrue);
+					Compiler.EmitCode("{0}: ldc.i4.s 0",Compiler.labelFalse);
+					
+					Compiler.EmitCode("{0}: nop",Compiler.labelTrue);
 					
 					}
 #line default
         break;
       case 41: // log -> Var, LogSum, Var
-#line 277 "parser.y"
+#line 297 "parser.y"
                      { string name1 = "b_"+ValueStack[ValueStack.Depth-3].val,name2="b_"+ValueStack[ValueStack.Depth-1].val;
 							if(variables.Contains(name1) && variables.Contains(name2))
 							{
@@ -623,7 +643,7 @@ string name = "";
 #line default
         break;
       case 42: // log -> Var, LogInt, Var
-#line 288 "parser.y"
+#line 308 "parser.y"
                      { string name1 = "b_"+ValueStack[ValueStack.Depth-3].val,name2="b_"+ValueStack[ValueStack.Depth-1].val;
 							if(variables.Contains(name1) && variables.Contains(name2))
 							{
@@ -638,47 +658,47 @@ string name = "";
 #line default
         break;
       case 43: // bool -> True
-#line 301 "parser.y"
+#line 321 "parser.y"
               { CurrentSemanticValue.type = '1'; Compiler.EmitCode("ldc.i4.s 1"); Compiler.EmitCode(""); }
 #line default
         break;
       case 44: // bool -> False
-#line 302 "parser.y"
+#line 322 "parser.y"
             { CurrentSemanticValue.type = '0'; Compiler.EmitCode("ldc.i4.s 0"); Compiler.EmitCode(""); }
 #line default
         break;
       case 45: // exp -> exp, Plus, term
-#line 305 "parser.y"
+#line 325 "parser.y"
                { CurrentSemanticValue.type = BinaryOpGenCode(Tokens.Plus, ValueStack[ValueStack.Depth-3].type, ValueStack[ValueStack.Depth-1].type); }
 #line default
         break;
       case 46: // exp -> exp, Minus, term
-#line 307 "parser.y"
+#line 327 "parser.y"
                { CurrentSemanticValue.type = BinaryOpGenCode(Tokens.Minus, ValueStack[ValueStack.Depth-3].type, ValueStack[ValueStack.Depth-1].type); }
 #line default
         break;
       case 47: // exp -> term
-#line 309 "parser.y"
+#line 329 "parser.y"
                { CurrentSemanticValue.type = ValueStack[ValueStack.Depth-1].type; }
 #line default
         break;
       case 48: // term -> term, Mult, factor
-#line 313 "parser.y"
+#line 333 "parser.y"
                { CurrentSemanticValue.type = BinaryOpGenCode(Tokens.Mult, ValueStack[ValueStack.Depth-3].type, ValueStack[ValueStack.Depth-1].type); }
 #line default
         break;
       case 49: // term -> term, Div, factor
-#line 315 "parser.y"
+#line 335 "parser.y"
                { CurrentSemanticValue.type = BinaryOpGenCode(Tokens.Div, ValueStack[ValueStack.Depth-3].type, ValueStack[ValueStack.Depth-1].type); }
 #line default
         break;
       case 50: // term -> factor
-#line 317 "parser.y"
+#line 337 "parser.y"
                { CurrentSemanticValue.type = ValueStack[ValueStack.Depth-1].type; }
 #line default
         break;
       case 51: // factor -> Int
-#line 321 "parser.y"
+#line 341 "parser.y"
                {
                Compiler.EmitCode("ldc.i4 {0}",int.Parse(ValueStack[ValueStack.Depth-1].val));
                CurrentSemanticValue.type = 'i'; 
@@ -686,7 +706,7 @@ string name = "";
 #line default
         break;
       case 52: // factor -> Dou
-#line 326 "parser.y"
+#line 346 "parser.y"
                {
                double d = double.Parse(ValueStack[ValueStack.Depth-1].val,System.Globalization.CultureInfo.InvariantCulture) ;
                Compiler.EmitCode(string.Format(System.Globalization.CultureInfo.InvariantCulture,"ldc.r8 {0}",d));
@@ -695,7 +715,7 @@ string name = "";
 #line default
         break;
       case 53: // factor -> Var
-#line 332 "parser.y"
+#line 352 "parser.y"
                {   
 			   string namei="i_"+ValueStack[ValueStack.Depth-1].val, named="d_"+ValueStack[ValueStack.Depth-1].val,nameb="b_"+ValueStack[ValueStack.Depth-1].val; 
 				  if(variables.Contains(namei))
@@ -722,7 +742,7 @@ string name = "";
 #line default
         break;
       case 54: // factor -> OpenPar, exp, ClosePar
-#line 356 "parser.y"
+#line 376 "parser.y"
                { CurrentSemanticValue.type = ValueStack[ValueStack.Depth-2].type; }
 #line default
         break;
@@ -740,7 +760,7 @@ string name = "";
         return CharToString((char)terminal);
   }
 
-#line 360 "parser.y"
+#line 380 "parser.y"
 
 int lineno=1;
 

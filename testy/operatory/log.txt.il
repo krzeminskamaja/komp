@@ -24,14 +24,16 @@ ldc.i4 1
 ldc.i4 5
 cgt
 
-brtrue IL_2128780708
+brtrue IL_760044846
 ldc.i4 1
 ldc.i4 0
-cgt
+clt
 
-brtrue IL_2128780708
-IL_2128780708: ldc.i4.s 1
+brtrue IL_760044846
 ldc.i4.s 0
+br IL_1580470093
+IL_760044846: ldc.i4.s 1
+IL_1580470093: nop
 stloc b_b
 
 ldloc b_b

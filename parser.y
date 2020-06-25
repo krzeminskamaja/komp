@@ -251,9 +251,19 @@ log		  : bool LogSum bool { if($1=='0' && $3=='0')
 					Compiler.EmitCode("brtrue {0}",Compiler.labelTrue); 
 					}  LogSum rel 
 					{ 
+					Random r = new Random();
+					int n = 0;
+					while(Compiler.labelSet.Contains(n) || n<1)
+						n=r.Next();
+					Compiler.labelSet.Add(n);
+					 Compiler.labelFalse = "IL_"+n.ToString();
+
 					 Compiler.EmitCode("brtrue {0}",Compiler.labelTrue); 
-					  Compiler.EmitCode("{0}: ldc.i4.s 1",Compiler.labelTrue);
 					 Compiler.EmitCode("ldc.i4.s 0"); 
+					  Compiler.EmitCode("br {0}",Compiler.labelFalse);
+					  Compiler.EmitCode("{0}: ldc.i4.s 1",Compiler.labelTrue);
+					 
+					 Compiler.EmitCode("{0}: nop", Compiler.labelFalse);
 					
 					
 					
@@ -269,10 +279,19 @@ log		  : bool LogSum bool { if($1=='0' && $3=='0')
 					} 
 					LogInt rel 
 					{ 
+					Random r = new Random();
+					int n = 0;
+					while(Compiler.labelSet.Contains(n) || n<1)
+						n=r.Next();
+					Compiler.labelSet.Add(n);
+					 Compiler.labelTrue= "IL_"+n.ToString();
+
 					Compiler.EmitCode("brfalse {0}", Compiler.labelFalse); 
-					Compiler.EmitCode("brtrue {0}", Compiler.labelTrue); 
+					Compiler.EmitCode("ldc.i4.s 1"); 
+					Compiler.EmitCode("br {0}",Compiler.labelTrue);
 					Compiler.EmitCode("{0}: ldc.i4.s 0",Compiler.labelFalse);
-					Compiler.EmitCode("ldc.i4.s 1",Compiler.); 
+					
+					Compiler.EmitCode("{0}: nop",Compiler.labelTrue);
 					
 					}
 		  | Var LogSum Var { string name1 = "b_"+$1,name2="b_"+$3;
