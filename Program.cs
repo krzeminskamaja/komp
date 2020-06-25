@@ -7,7 +7,10 @@ using GardensPoint;
 public class Compiler
 {
     public static int errors = 0;
-
+    public static int emitNo = 0;
+    public static HashSet<int> labelSet = new HashSet<int>();
+    public static string labelTrue = "";
+    public static string labelFalse = "";
     public static List<string> source;
 
     // arg[0] określa plik źródłowy
@@ -60,6 +63,7 @@ public class Compiler
     public static void EmitCode(string instr = null)
     {
         sw.WriteLine(instr);
+        emitNo++;
     }
 
     public static void EmitCode(string instr, params object[] args)
@@ -71,8 +75,8 @@ public class Compiler
 
     private static void GenProlog()
     {
-        EmitCode(".assembly extern mscorlib { }");
-        EmitCode(".assembly calculator { }");
+        EmitCode(".assembly extern mscorlib { }"); 
+        EmitCode(".assembly kompilator { }");
         EmitCode(".method static void main()");
         EmitCode("{");
         EmitCode(".entrypoint");

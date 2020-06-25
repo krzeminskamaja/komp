@@ -12,47 +12,51 @@
 ldc.r8 0
 stloc temp
 
-.locals init (float64 d_i)
-ldc.r8 0
-stloc d_i
-
-.locals init (float64 d_j)
-ldc.r8 0
-stloc d_j
+.locals init (bool b_a)
+ldc.i4.s 0
+stloc b_a
 
 .locals init (bool b_b)
 ldc.i4.s 0
 stloc b_b
 
-ldloc d_i
-ldc.i4 1
-conv.r8
-add
+.locals init (bool b_c)
+ldc.i4.s 0
+stloc b_c
+
+.locals init (bool b_d)
+ldc.i4.s 0
+stloc b_d
+
+ldc.i4.s 1
+
+stloc b_a
+
+ldc.i4.s 0
+
+stloc b_b
+
+ldloc b_a
 ldloc b_b
+or
+stloc b_c
+
+ldloc b_c
 call void [mscorlib]System.Console::Write(bool)
 
 ldstr "\n"
 call void [mscorlib]System.Console::Write(string)
 
-ldc.i4 2
-ldc.i4 5
-add
-ldc.i4 3
-mul
-conv.r8
-neg
-stloc d_i
-ldloc d_i
-call void [mscorlib]System.Console::Write(float64)
+ldloc b_a
+ldloc b_b
+and
+stloc b_d
 
-ldloc d_i
-neg
-stloc d_j
+ldloc b_d
+call void [mscorlib]System.Console::Write(bool)
+
 ldstr "\n"
 call void [mscorlib]System.Console::Write(string)
-
-ldloc d_j
-call void [mscorlib]System.Console::Write(float64)
 
 leave EndMain
 }

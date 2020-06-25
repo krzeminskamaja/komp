@@ -6,7 +6,7 @@ Cmt "//".*[\n]
 Int [0-9]+
 Str \"([^\\\"\n]|\\.)*\"
 Dou  [0-9]+\.[0-9]+
-Var [a-z]
+Var [a-zA-Z]+[0-9]*
 
 
 
@@ -33,6 +33,14 @@ Var [a-z]
 "/"					{ return (int)Tokens.Div; }
 "("					{ return (int)Tokens.OpenPar; }
 ")"					{ return (int)Tokens.ClosePar; }
+"||"				{ return (int)Tokens.LogSum; }
+"&&"				{ return (int)Tokens.LogInt; }
+"<"					{ return (int)Tokens.LE; }
+">"					{ return (int)Tokens.GE; }
+"<="				{ return (int)Tokens.LT; }
+">="				{ return (int)Tokens.GT; }
+"=="				{ return (int)Tokens.EQ; }
+"!="				{ return (int)Tokens.NE; }
 <<EOF>>				{ return (int)Tokens.EOF; }
 " "					{ }
 "\n"				{ }

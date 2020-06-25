@@ -1,0 +1,14 @@
+program{
+	bool a;
+	bool b;
+	bool c;
+	bool d;
+	a = true;
+	b = false;
+	c = a || b;
+	write c;
+	write "\n";
+	d = a && b;
+	write d;
+	write "\n";
+}

@@ -5,9 +5,9 @@ program{
 	i + 1;
 	write b;
 	write "\n";
-	i = (2  + 5) *3 ;
+	i = - (2  + 5) *3 ;
 	write i;
-	j = i - 0;
+	j = - i;
 	write "\n";
 	write j;
 }
