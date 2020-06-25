@@ -1,5 +1,6 @@
 program{
 	bool b;
-	b = 1>5 || 1<0;
+	bool c;
+	{}
 	write b;
 }

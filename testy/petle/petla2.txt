@@ -1,0 +1,4 @@
+program{
+	while(1<0)
+		0;
+}

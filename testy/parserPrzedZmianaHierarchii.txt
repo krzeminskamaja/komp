@@ -1,4 +1,4 @@
-﻿
+
 // Uwaga: W wywołaniu generatora gppg należy użyć opcji /gplex
 
 %namespace GardensPoint
@@ -10,8 +10,8 @@ public string  val;
 public char    type;
 }
 
-%token  Program OpenBr CloseBr EOF Print Sc IntT DouT BooT Eq True False Plus OpenPar ClosePar Minus Mult Div LogSum LogInt LE GE LT GT EQ NE If Else Return While
-%type <type> content print dek idef exp asn term factor deklar blok ifs log single return els loop
+%token  Program OpenBr CloseBr EOF Print Sc IntT DouT BooT Eq True False Plus OpenPar ClosePar Minus Mult Div LogSum LogInt LE GE LT GT EQ NE If Else
+%type <type> content print dek idef exp asn term factor log bool rel deklar blok ifs single 
 %token <val> Int Str Dou Var 
 
 %%
@@ -24,14 +24,15 @@ deklar	  : dek deklar
 		  |
 		  ;
 content   : print Sc content
-		  | asn Sc content
+		  | asn content
+		  | exp Sc { Compiler.EmitCode("pop"); } content
+		  | log Sc  content
+		  | rel Sc { Compiler.EmitCode("pop"); } content
 		  | blok content
-		  | ifs content
-		  | loop content
-		  | return
-		  | error { yyerrok(); Console.WriteLine("unmatched content"); Compiler.errors++; YYACCEPT;  }
-		  |
+		  | ifs
+		  | error { yyerrok(); Console.WriteLine("unmatched content"); Compiler.errors++; YYACCEPT;  }|
 		  ;
+
 ifs		  : If OpenPar log ClosePar { 
 									Random r = new Random();
 									int n = 0;
@@ -42,55 +43,44 @@ ifs		  : If OpenPar log ClosePar {
 									 Console.WriteLine(Compiler.labelIf);
 									Compiler.EmitCode("brfalse {0}",Compiler.labelIf);
 									} 
-									single els
-		  ;
-els		  : Else { Compiler.EmitCode("{0}: nop ",Compiler.labelIf); }   single
-		  | { Compiler.EmitCode("{0}: nop ",Compiler.labelIf); }  
-		  ;
-loop	  : 
-									 While 
-							{ Random r = new Random();
+									single
+									{ Compiler.EmitCode("{0}: nop ",Compiler.labelIf); } content 
+		  
+		  | If OpenPar rel ClosePar { 
+									Random r = new Random();
 									int n = 0;
 									while(Compiler.labelSet.Contains(n) || n<1)
 										n=r.Next();
 									Compiler.labelSet.Add(n);
-									 Compiler.labelWhileAfter= "IL_"+n.ToString();
-									 Console.WriteLine(Compiler.labelWhileAfter);
-									while(Compiler.labelSet.Contains(n) || n<1)
-										n=r.Next();
-									Compiler.labelSet.Add(n);
-									 Compiler.labelWhileBefore= "IL_"+n.ToString();
-									 Console.WriteLine(Compiler.labelWhileBefore);
-									 Compiler.EmitCode("{0}: nop",Compiler.labelWhileBefore);} 
-									 OpenPar log ClosePar
-									 { Compiler.EmitCode("brfalse {0}",Compiler.labelWhileAfter); } 
-									 single
-									 { Compiler.EmitCode("br {0}",Compiler.labelWhileBefore); Compiler.EmitCode("{0}: nop",Compiler.labelWhileAfter); }
-							;
-return    : Return Sc { Random r = new Random();
-									int n = 0;
-									while(Compiler.labelSet.Contains(n) || n<1)
-										n=r.Next();
-									Compiler.labelSet.Add(n);
-									 Compiler.labelReturn= "IL_"+n.ToString();
-									 Console.WriteLine(Compiler.labelReturn); Compiler.EmitCode("br {0}",Compiler.labelReturn); }
+									 Compiler.labelIf= "IL_"+n.ToString();
+									 Console.WriteLine(Compiler.labelIf);
+									Compiler.EmitCode("brfalse {0}",Compiler.labelIf);
+									} 
+									single
+									{ Compiler.EmitCode("{0}: nop ",Compiler.labelIf); } content 
 		  ;
-single	  : blok
-		  | asn Sc
-		  | print Sc
-		  | ifs
-		  | return
+single    : print Sc
+		  | asn
+		  | exp Sc { Compiler.EmitCode("pop"); } 
+		  | log Sc { Compiler.EmitCode("pop"); } 
+		  | rel Sc { Compiler.EmitCode("pop"); } 
+		  | blok
 		  ;
 blok	  : OpenBr content CloseBr 
 		  ;
 print	  : Print Str  { 
 Compiler.EmitCode("ldstr {0}",$2); Compiler.EmitCode("call void [mscorlib]System.Console::Write(string)"); Compiler.EmitCode("");
 						}
-		  
-		  
-
+		  | Print log  {
+			Compiler.EmitCode("call void [mscorlib]System.Console::Write(bool)"); 
+															Compiler.EmitCode("");
+		  }
+		  | Print rel  {
+			Compiler.EmitCode("call void [mscorlib]System.Console::Write(bool)"); 
+															Compiler.EmitCode("");
+		  }
 		   
-		  | Print asn { if($2=='i') { Compiler.EmitCode("call void [mscorlib]System.Console::Write(int32)"); 
+		  | Print exp { if($2=='i') { Compiler.EmitCode("call void [mscorlib]System.Console::Write(int32)"); 
 													Compiler.EmitCode("");  }
 									else if($2=='d'){ 
 										if(!variables.Contains("temp"))
@@ -106,6 +96,7 @@ Compiler.EmitCode("ldstr {0}",$2); Compiler.EmitCode("call void [mscorlib]System
 												Compiler.EmitCode("call string [mscorlib]System.String::Format(class [mscorlib]System.IFormatProvider,string, object)");
 												Compiler.EmitCode("call void [mscorlib]System.Console::Write(string)");
 															Compiler.EmitCode("");
+															
 									}
 									else
 									{
@@ -178,8 +169,7 @@ idef	  : IntT { $$ = 'i';}
 		  | BooT { $$ = 'b';} 
 		  ;
 
-asn	  : Var Eq asn { string namei="i_"+$1, named="d_"+$1, nameb = "b_"+$1;
-							Console.WriteLine("$3 to {0}",$3);
+asn	  : Var Eq exp Sc { string namei="i_"+$1, named="d_"+$1;
 							if(variables.Contains(namei) && $3!='i')
 							{
 								 Console.WriteLine("  line {0,3}:  semantic error - cannot convert double to int",lineno);
@@ -192,21 +182,120 @@ asn	  : Var Eq asn { string namei="i_"+$1, named="d_"+$1, nameb = "b_"+$1;
 							}
 							else if(variables.Contains(namei))
 							{
-								 Compiler.EmitCode("stloc {0}",namei);
-							}
-							else if(variables.Contains(nameb) && ( $3=='b'))
-							{
-								Compiler.EmitCode("stloc {0}",nameb);
+								if($3=='d')Compiler.EmitCode("conv.r8");
+								Compiler.EmitCode("stloc {0}",namei);
 							}
 							else
 							{
 								yyerrok(); Console.WriteLine("undeclared variable {0}",$1); Compiler.errors++;
 							}
 						}
+		  | Var Eq bool Sc { string nameb="b_"+$1;
+							if(variables.Contains(nameb))
+							{
+								Compiler.EmitCode("stloc {0}",nameb);
+								Compiler.EmitCode("");
+							}
+							else
+							{
+								yyerrok(); Console.WriteLine("undeclared variable {0}",$1); Compiler.errors++;
+							}
+
+						}
+		| Var Eq log Sc { string nameb="b_"+$1;
+							if(variables.Contains(nameb))
+							{
+								Compiler.EmitCode("stloc {0}",nameb);
+								Compiler.EmitCode("");
+							}
+							else
+							{
+								yyerrok(); Console.WriteLine("undeclared variable {0}",$1); Compiler.errors++;
+							}
+
+						}
+		  | Var Eq rel Sc { string nameb="b_"+$1;
+							if(variables.Contains(nameb))
+							{
+								Compiler.EmitCode("stloc {0}",nameb);
+								Compiler.EmitCode("");
+							}
+							else
+							{
+								yyerrok(); Console.WriteLine("undeclared variable {0}",$1); Compiler.errors++;
+							}
+
+						}
+		  | Var Eq Minus exp Sc { string namei="i_"+$1, named="d_"+$1;
+							if(variables.Contains(namei) && $4!='i')
+							{
+								 Console.WriteLine("  line {0,3}:  semantic error - cannot convert double to int",lineno);
+								 ++Compiler.errors;
+							}
+							else if(variables.Contains(named))
+							{
+								if($4!='d')Compiler.EmitCode("conv.r8");
+								Compiler.EmitCode("neg");
+								Compiler.EmitCode("stloc {0}",named);
+							}
+							else if(variables.Contains(namei))
+							{
+								if($4=='d')Compiler.EmitCode("conv.r8");
+								Compiler.EmitCode("neg");
+								Compiler.EmitCode("stloc {0}",namei);
+							}
+							else
+							{
+								yyerrok(); Console.WriteLine("undeclared variable {0}",$1); Compiler.errors++;
+							}
 		  
-		  | log 
+		  }
 		  ;
-log		  : log {	Random r = new Random();
+rel		  : exp LE exp { Compiler.EmitCode("clt"); Compiler.EmitCode(""); }
+		  | exp LT exp { Compiler.EmitCode("cgt"); Compiler.EmitCode("ldc.i4 0");Compiler.EmitCode("ceq"); Compiler.EmitCode(""); }
+		  | exp GE exp { Compiler.EmitCode("cgt"); Compiler.EmitCode(""); }
+		  | exp GT exp { Compiler.EmitCode("clt"); Compiler.EmitCode("ldc.i4 0");Compiler.EmitCode("ceq"); Compiler.EmitCode(""); }
+		  | exp EQ exp { Compiler.EmitCode("ceq"); Compiler.EmitCode(""); }
+		  | exp NE exp { Compiler.EmitCode("ceq"); Compiler.EmitCode("ldc.i4 0");Compiler.EmitCode("ceq"); Compiler.EmitCode(""); }
+		  | bool EQ bool { Compiler.EmitCode("ceq"); Compiler.EmitCode(""); }
+		  | bool NE bool { Compiler.EmitCode("ceq"); Compiler.EmitCode("ldc.i4 0");Compiler.EmitCode("ceq"); Compiler.EmitCode(""); }
+		  | OpenPar log ClosePar
+		  | OpenPar rel ClosePar
+		  ;
+log		  : bool {	Random r = new Random();
+					int n = 0;
+					while(Compiler.labelSet.Contains(n) || n<1)
+						n=r.Next();
+					Compiler.labelSet.Add(n);
+					 Compiler.labelTrue = "IL_"+n.ToString();
+					Compiler.EmitCode("brtrue {0}",Compiler.labelTrue); 
+					} 
+					LogSum bool
+					{ 
+					Random r = new Random();
+					int n = 0;
+					while(Compiler.labelSet.Contains(n) || n<1)
+						n=r.Next();
+					Compiler.labelSet.Add(n);
+					 Compiler.labelFalse = "IL_"+n.ToString();
+
+					 Compiler.EmitCode("brtrue {0}",Compiler.labelTrue); 
+					 Compiler.EmitCode("ldc.i4 0"); 
+					  Compiler.EmitCode("br {0}",Compiler.labelFalse);
+					  Compiler.EmitCode("{0}: ldc.i4 1",Compiler.labelTrue);
+					 
+					 if(!variables.Contains("tempInt"))
+					 {
+						 Compiler.EmitCode(".locals init(int32 tempInt)");Compiler.EmitCode("ldc.i4 {0}",0);
+											Compiler.EmitCode("stloc tempInt");Compiler.EmitCode(""); variables.Add("tempInt");
+					 }
+					 
+					 Compiler.EmitCode("{0}: nop", Compiler.labelFalse);
+					
+					
+					
+					}
+		  | bool {	Random r = new Random();
 					int n = 0;
 					while(Compiler.labelSet.Contains(n) || n<1)
 						n=r.Next();
@@ -214,7 +303,9 @@ log		  : log {	Random r = new Random();
 					 Compiler.labelFalse= "IL_"+n.ToString();
 					 Console.WriteLine(Compiler.labelFalse);
 					Compiler.EmitCode("brfalse {0}",Compiler.labelFalse);
-					} LogInt  rel { 
+					} 
+					LogInt bool 
+					{ 
 					Random r = new Random();
 					int n = 0;
 					while(Compiler.labelSet.Contains(n) || n<1)
@@ -231,18 +322,19 @@ log		  : log {	Random r = new Random();
 						 Compiler.EmitCode(".locals init(int32 tempInt)");Compiler.EmitCode("ldc.i4 {0}",0);
 											Compiler.EmitCode("stloc tempInt");Compiler.EmitCode(""); variables.Add("tempInt");
 					 }
-					 
+					
 					Compiler.EmitCode("{0}: nop",Compiler.labelTrue);
-					$$ = 'b';
+					
 					}
-		  | log {	Random r = new Random();
+		  | rel {	Random r = new Random();
 					int n = 0;
 					while(Compiler.labelSet.Contains(n) || n<1)
 						n=r.Next();
 					Compiler.labelSet.Add(n);
 					 Compiler.labelTrue = "IL_"+n.ToString();
 					Compiler.EmitCode("brtrue {0}",Compiler.labelTrue); 
-					}  LogSum rel { 
+					}  LogSum rel 
+					{ 
 					Random r = new Random();
 					int n = 0;
 					while(Compiler.labelSet.Contains(n) || n<1)
@@ -262,20 +354,117 @@ log		  : log {	Random r = new Random();
 					 
 					 Compiler.EmitCode("{0}: nop", Compiler.labelFalse);
 					
-					$$ = 'b';
+					
 					}
+		  | rel {	Random r = new Random();
+					int n = 0;
+					while(Compiler.labelSet.Contains(n) || n<1)
+						n=r.Next();
+					Compiler.labelSet.Add(n);
+					 Compiler.labelFalse= "IL_"+n.ToString();
+					 Console.WriteLine(Compiler.labelFalse);
+					Compiler.EmitCode("brfalse {0}",Compiler.labelFalse);
+					} 
+					LogInt rel 
+					{ 
+					Random r = new Random();
+					int n = 0;
+					while(Compiler.labelSet.Contains(n) || n<1)
+						n=r.Next();
+					Compiler.labelSet.Add(n);
+					 Compiler.labelTrue= "IL_"+n.ToString();
 
-		  | rel 
-		  ;
-rel		  : rel LE exp { Compiler.EmitCode("clt"); Compiler.EmitCode(""); $$.type = 'b';}
-		  | rel LT exp { Compiler.EmitCode("cgt"); Compiler.EmitCode("ldc.i4 0");Compiler.EmitCode("ceq"); Compiler.EmitCode(""); $$.type = 'b';}
-		  | rel GE exp { Compiler.EmitCode("cgt"); Compiler.EmitCode(""); $$.type = 'b'; }
-		  | rel GT exp { Compiler.EmitCode("clt"); Compiler.EmitCode("ldc.i4 0");Compiler.EmitCode("ceq"); Compiler.EmitCode(""); $$.type = 'b';}
-		  | rel EQ exp { Compiler.EmitCode("ceq"); Compiler.EmitCode("");$$.type = 'b'; }
-		  | rel NE exp { Compiler.EmitCode("ceq"); Compiler.EmitCode("ldc.i4 0");Compiler.EmitCode("ceq"); Compiler.EmitCode(""); $$.type = 'b';}
-		  | exp 
+					Compiler.EmitCode("brfalse {0}", Compiler.labelFalse); 
+					Compiler.EmitCode("ldc.i4 1"); 
+					Compiler.EmitCode("br {0}",Compiler.labelTrue);
+					Compiler.EmitCode("{0}: ldc.i4 0",Compiler.labelFalse);
+					if(!variables.Contains("tempInt"))
+					 {
+						 Compiler.EmitCode(".locals init(int32 tempInt)");Compiler.EmitCode("ldc.i4 {0}",0);
+											Compiler.EmitCode("stloc tempInt");Compiler.EmitCode(""); variables.Add("tempInt");
+					 }
+					 
+					Compiler.EmitCode("{0}: nop",Compiler.labelTrue);
+					
+					}
+		  | Var LogSum Var { string name1 = "b_"+$1,name2="b_"+$3;
+							if(variables.Contains(name1) && variables.Contains(name2))
+							{
+								Compiler.EmitCode("ldloc {0}",name1);
+
+								Random r = new Random();
+								int n = 0;
+								while(Compiler.labelSet.Contains(n) || n<1)
+									n=r.Next();
+								Compiler.labelSet.Add(n);
+								 Compiler.labelTrue = "IL_"+n.ToString();
+								Compiler.EmitCode("brtrue {0}",Compiler.labelTrue); 
+
+								Compiler.EmitCode("ldloc {0}",name2);
+								
+								while(Compiler.labelSet.Contains(n) || n<1)
+									n=r.Next();
+								Compiler.labelSet.Add(n);
+								 Compiler.labelFalse = "IL_"+n.ToString();
+
+								 Compiler.EmitCode("brtrue {0}",Compiler.labelTrue); 
+								 Compiler.EmitCode("ldc.i4 0"); 
+								  Compiler.EmitCode("br {0}",Compiler.labelFalse);
+								  Compiler.EmitCode("{0}: ldc.i4 1",Compiler.labelTrue);
+								if(!variables.Contains("tempInt"))
+								 {
+									 Compiler.EmitCode(".locals init(int32 tempInt)");Compiler.EmitCode("ldc.i4 {0}",0);
+														Compiler.EmitCode("stloc tempInt");Compiler.EmitCode(""); variables.Add("tempInt");
+								 }
+								
+								 Compiler.EmitCode("{0}: nop", Compiler.labelFalse);
+								 
+							}
+							else
+							{
+								yyerrok(); Console.WriteLine("undeclared variable {0} or {1}",$1,$3); Compiler.errors++;
+							} }
+		  | Var LogInt Var { string name1 = "b_"+$1,name2="b_"+$3;
+							if(variables.Contains(name1) && variables.Contains(name2))
+							{
+								Compiler.EmitCode("ldloc {0}",name1);
+								Random r = new Random();
+								int n = 0;
+								while(Compiler.labelSet.Contains(n) || n<1)
+									n=r.Next();
+								Compiler.labelSet.Add(n);
+								 Compiler.labelFalse= "IL_"+n.ToString();
+								 Console.WriteLine(Compiler.labelFalse);
+								Compiler.EmitCode("brfalse {0}",Compiler.labelFalse);
+								Compiler.EmitCode("ldloc {0}",name2);
+								while(Compiler.labelSet.Contains(n) || n<1)
+									n=r.Next();
+								Compiler.labelSet.Add(n);
+								 Compiler.labelTrue= "IL_"+n.ToString();
+
+								Compiler.EmitCode("brfalse {0}", Compiler.labelFalse); 
+								Compiler.EmitCode("ldc.i4 1"); 
+								Compiler.EmitCode("br {0}",Compiler.labelTrue);
+								Compiler.EmitCode("{0}: ldc.i4 0",Compiler.labelFalse);
+								if(!variables.Contains("tempInt"))
+								 {
+									 Compiler.EmitCode(".locals init(int32 tempInt)");Compiler.EmitCode("ldc.i4 {0}",0);
+														Compiler.EmitCode("stloc tempInt");Compiler.EmitCode(""); variables.Add("tempInt");
+								 }
+								
+								Compiler.EmitCode("{0}: nop",Compiler.labelTrue);
+								
+							}
+							else
+							{
+								yyerrok(); Console.WriteLine("undeclared variable {0} or {1}",$1,$3); Compiler.errors++;
+							} }
+		  | OpenBr log CloseBr
 		  ;
 
+bool	  : True { $$ = '1'; Compiler.EmitCode("ldc.i4 1"); Compiler.EmitCode(""); }
+		  | False { $$ = '0'; Compiler.EmitCode("ldc.i4 0"); Compiler.EmitCode(""); }
+		  ;
 exp       : exp Plus term
                { $$ = BinaryOpGenCode(Tokens.Plus, $1, $3); }
           | exp Minus term
@@ -327,11 +516,8 @@ factor    : Int
 				  }
 		  
                }
-			| True { $$ = '1'; Compiler.EmitCode("ldc.i4 1"); Compiler.EmitCode(""); }
-			| False { $$ = '0'; Compiler.EmitCode("ldc.i4 0"); Compiler.EmitCode(""); }
-		  
-			| OpenPar asn ClosePar
-			   { $$ = $2; }
+			| OpenPar exp ClosePar
+               { $$ = $2; }
           ;
 
 %%

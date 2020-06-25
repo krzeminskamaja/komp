@@ -16,15 +16,24 @@ stloc temp
 ldc.i4 0
 stloc tempInt
 
-.locals init (bool b_b)
-ldc.i4.s 0
-stloc b_b
+.locals init (bool b_d)
+ldc.i4 0
+stloc b_d
 
-.locals init (bool b_c)
-ldc.i4.s 0
-stloc b_c
+ldc.i4 0
+ldc.i4 5
+clt
 
-ldloc b_b
+brtrue IL_762614971
+ldc.i4 1
+
+brtrue IL_762614971
+ldc.i4 0
+br IL_1386311432
+IL_762614971: ldc.i4 1
+IL_1386311432: nop
+stloc b_d
+ldloc b_d
 call void [mscorlib]System.Console::Write(bool)
 
 leave EndMain

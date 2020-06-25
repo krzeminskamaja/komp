@@ -16,16 +16,23 @@ stloc temp
 ldc.i4 0
 stloc tempInt
 
-.locals init (bool b_b)
-ldc.i4.s 0
-stloc b_b
+.locals init (int32 i_a)
+ldc.i4 0
+stloc i_a
 
-.locals init (bool b_c)
-ldc.i4.s 0
-stloc b_c
+.locals init (int32 i_b)
+ldc.i4 0
+stloc i_b
 
-ldloc b_b
-call void [mscorlib]System.Console::Write(bool)
+ldc.i4 4
+stloc i_b
+ldc.i4 2
+stloc i_b
+ldc.i4 0
+call void [mscorlib]System.Console::Write(int32)
+
+ldloc i_b
+call void [mscorlib]System.Console::Write(int32)
 
 leave EndMain
 }

@@ -16,6 +16,7 @@ Var [a-zA-Z]+[0-9]*
 {Int}				{ yylval.val=yytext; return (int)Tokens.Int; }
 {Dou}				{ yylval.val=yytext; return (int)Tokens.Dou; }
 {Str}				{ yylval.val=yytext; return (int)Tokens.Str; }
+"while"				{ return (int)Tokens.While; }
 "int"				{ return (int)Tokens.IntT; }
 "double"			{ return (int)Tokens.DouT; }
 "bool"				{ return (int)Tokens.BooT; }
@@ -23,6 +24,9 @@ Var [a-zA-Z]+[0-9]*
 "write"				{ return (int)Tokens.Print; }
 "true"				{ return (int)Tokens.True; }
 "false"				{ return (int)Tokens.False; }
+"if"				{ return (int)Tokens.If; }
+"else"				{ return (int)Tokens.Else;}
+"return"			{ return (int)Tokens.Return;}
 "{"					{ return (int)Tokens.OpenBr; }
 "}"					{ return (int)Tokens.CloseBr; }
 ";"					{ return (int)Tokens.Sc; }

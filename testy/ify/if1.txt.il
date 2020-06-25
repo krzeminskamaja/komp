@@ -8,24 +8,25 @@
 
 // prolog
 
-.locals init(float64 temp)
-ldc.r8 0
-stloc temp
+ldc.i4 1
 
-.locals init(int32 tempInt)
-ldc.i4 0
-stloc tempInt
+ldc.i4 1
+ldc.i4 2
+cgt
 
-.locals init (bool b_b)
-ldc.i4.s 0
-stloc b_b
+brfalse IL_682865821
+ldstr "jestem w if"
+call void [mscorlib]System.Console::Write(string)
 
-.locals init (bool b_c)
-ldc.i4.s 0
-stloc b_c
+ldc.i4 2
+ldc.i4 3
+add
+IL_682865821: nop 
+ldstr "jestem w else"
+call void [mscorlib]System.Console::Write(string)
 
-ldloc b_b
-call void [mscorlib]System.Console::Write(bool)
+ldstr "po if"
+call void [mscorlib]System.Console::Write(string)
 
 leave EndMain
 }

@@ -1,7 +1,7 @@
-C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Debug\kompilatorXDD.csproj.CoreCompileInputs.cache
 C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\bin\Debug\kompilatorXDD.exe.config
 C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\bin\Debug\kompilatorXDD.exe
 C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\bin\Debug\kompilatorXDD.pdb
 C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\bin\Debug\QUT.ShiftReduceParser.dll
+C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Debug\kompilatorXDD.csproj.CoreCompileInputs.cache
 C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Debug\kompilatorXDD.exe
 C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Debug\kompilatorXDD.pdb

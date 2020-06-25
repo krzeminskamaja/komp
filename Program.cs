@@ -11,6 +11,10 @@ public class Compiler
     public static HashSet<int> labelSet = new HashSet<int>();
     public static string labelTrue = "";
     public static string labelFalse = "";
+    public static string labelIf = "";
+    public static string labelReturn = "";
+    public static string labelWhileBefore = "";
+    public static string labelWhileAfter = "";
     public static List<string> source;
 
     // arg[0] określa plik źródłowy
@@ -47,6 +51,7 @@ public class Compiler
         sw = new StreamWriter(file + ".il");
         GenProlog();
         bool czySparsowano=parser.Parse();
+        GenReturnLabel();
         GenEpilog();
         sw.Close();
         source.Close();
@@ -72,6 +77,11 @@ public class Compiler
     }
 
     private static StreamWriter sw;
+
+    private static void GenReturnLabel()
+    {
+       if(labelReturn!="") EmitCode("{0}: nop", labelReturn);
+    }
 
     private static void GenProlog()
     {

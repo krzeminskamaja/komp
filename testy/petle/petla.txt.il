@@ -1,5 +1,5 @@
 .assembly extern mscorlib { }
-.assembly calculator { }
+.assembly kompilator { }
 .method static void main()
 {
 .entrypoint
@@ -12,48 +12,39 @@
 ldc.r8 0
 stloc temp
 
-.locals init (float64 d_i)
-ldc.r8 0
-stloc d_i
+.locals init(int32 tempInt)
+ldc.i4 0
+stloc tempInt
 
-.locals init (float64 d_j)
-ldc.r8 0
-stloc d_j
+.locals init (int32 i_a)
+ldc.i4 0
+stloc i_a
 
-.locals init (bool b_b)
-ldc.i4.s 0
-stloc b_b
-
-ldloc d_i
 ldc.i4 1
-conv.r8
-add
-ldloc b_b
-call void [mscorlib]System.Console::Write(bool)
+stloc i_a
+IL_1034395314: nop
+ldloc i_a
+ldc.i4 10
+cgt
+ldc.i4 0
+ceq
+
+brfalse IL_1079420831
+ldstr "a"
+call void [mscorlib]System.Console::Write(string)
+
+ldloc i_a
+call void [mscorlib]System.Console::Write(int32)
 
 ldstr "\n"
 call void [mscorlib]System.Console::Write(string)
 
-ldc.i4 2
-ldc.i4 5
+ldloc i_a
+ldc.i4 1
 add
-ldc.i4 3
-mul
-conv.r8
-neg
-stloc d_i
-ldloc d_i
-call void [mscorlib]System.Console::Write(float64)
-
-ldloc d_i
-neg
-stloc d_j
-ldstr "\n"
-call void [mscorlib]System.Console::Write(string)
-
-ldloc d_j
-call void [mscorlib]System.Console::Write(float64)
-
+stloc i_a
+br IL_1034395314
+IL_1079420831: nop
 leave EndMain
 }
 catch [mscorlib]System.Exception
