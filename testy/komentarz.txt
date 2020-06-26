@@ -1,3 +1,15 @@
-program{
-//1
-}
+program
+ {
+ int i;
+ double d;
+ bool b;
+ i = 5;
+ b = true;
+ d = 99.88;
+ write i;
+ write "\n";
+ write d;
+ write "\n";
+ write b;
+ write "\n";
+ } 

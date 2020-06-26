@@ -20,31 +20,20 @@ stloc tempInt
 ldc.i4 0
 stloc i_a
 
-ldc.i4 1
-stloc i_a
-IL_1646701098: nop
-ldloc i_a
 ldc.i4 10
-cgt
-ldc.i4 0
-ceq
-
-brfalse IL_276548766
-ldstr "a"
-call void [mscorlib]System.Console::Write(string)
-
+stloc i_a
 ldloc i_a
 call void [mscorlib]System.Console::Write(int32)
 
 ldstr "\n"
 call void [mscorlib]System.Console::Write(string)
 
-ldloc i_a
-ldc.i4 1
-add
+ldc.i4 10
+not
 stloc i_a
-br IL_1646701098
-IL_276548766: nop
+ldloc i_a
+call void [mscorlib]System.Console::Write(int32)
+
 leave EndMain
 }
 catch [mscorlib]System.Exception

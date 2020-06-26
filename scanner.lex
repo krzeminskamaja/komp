@@ -2,10 +2,10 @@
 %using QUT.Gppg;
 %namespace GardensPoint
 
-Cmt "//".*[\n]
+Cmt "//"\.*[\n]
+Dou [0-9]+.[0-9]+
 Int [0-9]+
 Str \"([^\\\"\n]|\\.)*\"
-Dou  [0-9]+\.[0-9]+
 Var [a-zA-Z]+[0-9]*
 
 
@@ -21,6 +21,10 @@ Var [a-zA-Z]+[0-9]*
 "double"			{ return (int)Tokens.DouT; }
 "bool"				{ return (int)Tokens.BooT; }
 "read"				{ return (int)Tokens.Read; }
+"&"					{ return (int)Tokens.BitAnd; }
+"|"					{ return (int)Tokens.BitSum; }
+"~"					{ return (int)Tokens.BitNeg; }
+"!"					{ return (int)Tokens.Not; }
 "program"			{ return (int)Tokens.Program; }
 "write"				{ return (int)Tokens.Print; }
 "true"				{ return (int)Tokens.True; }

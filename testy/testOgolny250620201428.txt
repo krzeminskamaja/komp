@@ -1,6 +1,28 @@
 program{
+	double i;
+	double j;
+	int y;
+	int x;
+	bool b;
 	bool d;
+	i + 1;
+	write b;
+	write "\n";
+	i = (2  + 5) *3 ;
+	write i;
+	j = i;
+	write "\n";
+	write j;
 	d = (0<5) || true;
 	write d;
+	write "\n";
+	y=12;
+	x=1;
+	x = 0 | y;
+	write x;
+	write "\n";
+	y = ~10;
+	write y;
+	write "\n";
 	// hola chica
 }

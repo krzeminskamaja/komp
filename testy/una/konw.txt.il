@@ -16,48 +16,28 @@ stloc temp
 ldc.i4 0
 stloc tempInt
 
-.locals init (float64 d_i)
+.locals init (int32 i_a)
+ldc.i4 0
+stloc i_a
+
+.locals init (float64 d_b)
 ldc.r8 0
-stloc d_i
+stloc d_b
 
-.locals init (float64 d_j)
-ldc.r8 0
-stloc d_j
-
-.locals init (int32 i_y)
-ldc.i4 0
-stloc i_y
-
-.locals init (int32 i_x)
-ldc.i4 0
-stloc i_x
-
-.locals init (bool b_b)
-ldc.i4 0
-stloc b_b
-
-.locals init (bool b_d)
-ldc.i4 0
-stloc b_d
-
-ldloc d_i
+ldc.r8 7.8
+conv.i4
+stloc i_a
 ldc.i4 1
+
 conv.r8
-add
-ldloc b_b
-call void [mscorlib]System.Console::Write(bool)
+stloc d_b
+ldloc i_a
+call void [mscorlib]System.Console::Write(int32)
 
 ldstr "\n"
 call void [mscorlib]System.Console::Write(string)
 
-ldc.i4 2
-ldc.i4 5
-add
-ldc.i4 3
-mul
-conv.r8
-stloc d_i
-ldloc d_i
+ldloc d_b
 stloc temp
 call class [mscorlib]System.Globalization.CultureInfo [mscorlib]System.Globalization.CultureInfo::get_InvariantCulture()
 ldstr "{0:0.000000}"
@@ -66,59 +46,19 @@ box [mscorlib]System.Double
 call string [mscorlib]System.String::Format(class [mscorlib]System.IFormatProvider,string, object)
 call void [mscorlib]System.Console::Write(string)
 
-ldloc d_i
-stloc d_j
 ldstr "\n"
 call void [mscorlib]System.Console::Write(string)
 
-ldloc d_j
+ldloc i_a
+conv.r8
+stloc d_b
+ldloc d_b
 stloc temp
 call class [mscorlib]System.Globalization.CultureInfo [mscorlib]System.Globalization.CultureInfo::get_InvariantCulture()
 ldstr "{0:0.000000}"
 ldloc temp
 box [mscorlib]System.Double
 call string [mscorlib]System.String::Format(class [mscorlib]System.IFormatProvider,string, object)
-call void [mscorlib]System.Console::Write(string)
-
-ldc.i4 0
-ldc.i4 5
-clt
-
-brtrue IL_948848625
-ldc.i4 1
-
-brtrue IL_948848625
-ldc.i4 0
-br IL_1283298084
-IL_948848625: ldc.i4 1
-IL_1283298084: nop
-stloc b_d
-ldloc b_d
-call void [mscorlib]System.Console::Write(bool)
-
-ldstr "\n"
-call void [mscorlib]System.Console::Write(string)
-
-ldc.i4 12
-stloc i_y
-ldc.i4 1
-stloc i_x
-ldc.i4 0
-ldloc i_y
-or
-stloc i_x
-ldloc i_x
-call void [mscorlib]System.Console::Write(int32)
-
-ldstr "\n"
-call void [mscorlib]System.Console::Write(string)
-
-ldc.i4 10
-stloc i_y
-ldloc i_y
-call void [mscorlib]System.Console::Write(int32)
-
-ldstr "\n"
 call void [mscorlib]System.Console::Write(string)
 
 leave EndMain

@@ -1,0 +1,8 @@
+program{
+	bool a;
+	a = true;
+	write a;
+	write "\n";
+	a = !a;
+	write a;
+}	

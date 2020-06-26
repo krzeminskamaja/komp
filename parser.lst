@@ -1,10 +1,10 @@
 
 // ==========================================================================
-//  GPPG error listing for yacc source file <parser.y - 26.06.2020 00:09:49>
+//  GPPG error listing for yacc source file <parser.y - 26.06.2020 21:41:47>
 // ==========================================================================
 //  Version:  1.5.2
 //  Machine:  DESKTOP-1T6954A
-//  DateTime: 26.06.2020 00:09:55
+//  DateTime: 26.06.2020 21:41:54
 //  UserName: Maya
 // ==========================================================================
 
@@ -21,16 +21,13 @@ public string  val;
 public char    type;
 }
 
-%token  Program OpenBr CloseBr EOF Print Sc IntT DouT BooT Eq True False Plus OpenPar ClosePar Minus Mult Div LogSum LogInt LE GE LT GT EQ NE If Else Return While
-%type <type> content print dek idef exp asn term factor deklar blok ifs log single return els loop
+%token  Program OpenBr CloseBr EOF Print Sc IntT DouT BooT Eq True False Plus OpenPar ClosePar Minus Mult Div LogSum LogInt LE GE LT GT EQ NE If Else Return While Read BitSum BitAnd BitNeg
+%type <type> content print dek idef exp asn term factor deklar blok ifs log single return els loop read bit una
 %token <val> Int Str Dou Var 
 
 %%
-// Warning: NonTerminal symbol "Anon@4" is unreachable
-// Warning: NonTerminal symbol "Anon@5" is unreachable
-// Warning: NonTerminal symbol "loop" is unreachable
-// Warning: NonTerminal symbol "Anon@3" is unreachable
-// ---------------------------------------------------
+// Warning: NonTerminal symbol "una" is unreachable
+// ------------------------------------------------
 
 start	  : Program OpenBr deklar content CloseBr EOF
 		  | error EOF { yyerrok();  Compiler.errors++;}
@@ -43,45 +40,73 @@ content   : print Sc content
 		  | asn Sc content
 		  | blok content
 		  | ifs content
+		  | loop content
+		  | read Sc content
 		  | return
 		  | error { yyerrok(); Console.WriteLine("unmatched content"); Compiler.errors++; YYACCEPT;  }
 		  |
 		  ;
-ifs		  : If OpenPar log ClosePar { 
+read	  : Read Var { 
+							Compiler.EmitCode("call string [mscorlib]System.Console::ReadLine()");
+							
+							string namei = "i_"+$2,nameb ="b_"+$2,named="d_"+$2;
+							if(variables.Contains(namei))
+							{	
+								Compiler.EmitCode("ldloca {0}",namei);
+								Compiler.EmitCode("call bool [mscorlib]System.Int32::TryParse(string, int32&)");
+							}
+							else if(variables.Contains(nameb))
+							{
+								Compiler.EmitCode("ldloca {0}",nameb);
+								Compiler.EmitCode("call bool [mscorlib]System.Boolean::TryParse(string, bool&)");
+							}
+							else if(variables.Contains(named))
+							{
+								Compiler.EmitCode("ldloca {0}",named);
+								Compiler.EmitCode("call bool [mscorlib]System.Double::TryParse(string, float64&)");
+							}
+							else
+							{
+							yyerrok(); Console.WriteLine("undeclared variable {0}",$1); Compiler.errors++;
+							}
+							}
+		  ;
+ifs		  : If OpenPar log ClosePar { Compiler.licznikIf++;
 									Random r = new Random();
 									int n = 0;
 									while(Compiler.labelSet.Contains(n) || n<1)
 										n=r.Next();
 									Compiler.labelSet.Add(n);
-									 Compiler.labelIf= "IL_"+n.ToString();
-									 Console.WriteLine(Compiler.labelIf);
-									Compiler.EmitCode("brfalse {0}",Compiler.labelIf);
+									 Compiler.labelIf.Add("IL_"+n.ToString());
+									 while(Compiler.labelSet.Contains(n) || n<1)
+										n=r.Next();
+									Compiler.labelSet.Add(n);
+									 Compiler.labelEndIf.Add("IL_"+n.ToString());
+									Compiler.EmitCode("brfalse {0}",Compiler.labelIf[Compiler.licznikIf]);
 									} 
-									single els
+									single { Compiler.EmitCode("br {0}", Compiler.labelEndIf[Compiler.licznikIf]); } els 
 		  ;
-els		  : Else { Compiler.EmitCode("{0}: nop ",Compiler.labelIf); }   single
-		  | { Compiler.EmitCode("{0}: nop ",Compiler.labelIf); }  
+els		  : Else { Compiler.EmitCode("{0}: nop ",Compiler.labelIf[Compiler.licznikIf]); }   single { Compiler.EmitCode("{0}: nop ",Compiler.labelEndIf[Compiler.licznikIf]); Compiler.licznikIf--; Compiler.labelEndIf.RemoveAt(Compiler.labelEndIf.Count - 1); }
+		  | { Compiler.EmitCode("{0}: nop ",Compiler.labelIf[Compiler.licznikIf]);  Compiler.EmitCode("{0}: nop ",Compiler.labelEndIf[Compiler.licznikIf]); Compiler.licznikIf--; Compiler.labelEndIf.RemoveAt(Compiler.labelEndIf.Count - 1); }  
 		  ;
-loop	  : { Random r = new Random();
-									int n = 0;
-									while(Compiler.labelSet.Contains(n) || n<1)
-										n=r.Next();
-									Compiler.labelSet.Add(n);
-									 Compiler.labelWhileAfter= "IL_"+n.ToString();
-									 Console.WriteLine(Compiler.labelWhileAfter); }
+loop	  : 
 									 While 
-							{ Random r = new Random();
+							{ Compiler.licznikPetli++; 
+							Random r = new Random();
 									int n = 0;
 									while(Compiler.labelSet.Contains(n) || n<1)
 										n=r.Next();
 									Compiler.labelSet.Add(n);
-									 Compiler.labelWhileBefore= "IL_"+n.ToString();
-									 Console.WriteLine(Compiler.labelWhileBefore);
-									 Compiler.EmitCode("{0}: nop",Compiler.labelWhileBefore);} 
+									 Compiler.labelWhileAfter.Add("IL_"+n.ToString());
+									while(Compiler.labelSet.Contains(n) || n<1)
+										n=r.Next();
+									Compiler.labelSet.Add(n);
+									 Compiler.labelWhileBefore.Add("IL_"+n.ToString());
+									 Compiler.EmitCode("{0}: nop",Compiler.labelWhileBefore[Compiler.licznikPetli]);} 
 									 OpenPar log ClosePar
-									 { Compiler.EmitCode("brfalse {0}",Compiler.labelWhileAfter); } 
+									 { Compiler.EmitCode("brfalse {0}",Compiler.labelWhileAfter[Compiler.licznikPetli]); } 
 									 single
-									 { Compiler.EmitCode("br {0}",Compiler.labelWhileBefore); Compiler.EmitCode("{0}: nop",Compiler.labelWhileAfter); }
+									 { Compiler.EmitCode("br {0}",Compiler.labelWhileBefore[Compiler.licznikPetli]); Compiler.EmitCode("{0}: nop",Compiler.labelWhileAfter[Compiler.licznikPetli]); Compiler.licznikPetli--; Compiler.labelWhileAfter.RemoveAt(Compiler.labelWhileAfter.Count - 1);Compiler.labelWhileBefore.RemoveAt(Compiler.labelWhileBefore.Count - 1);}
 							;
 return    : Return Sc { Random r = new Random();
 									int n = 0;
@@ -94,6 +119,8 @@ return    : Return Sc { Random r = new Random();
 single	  : blok
 		  | asn Sc
 		  | print Sc
+		  | read Sc
+		  | loop
 		  | ifs
 		  | return
 		  ;
@@ -300,13 +327,51 @@ exp       : exp Plus term
                { $$ = $1; }
           ;
 
-term      : term Mult factor
+term      : term Mult bit
                { $$ = BinaryOpGenCode(Tokens.Mult, $1, $3); }
-          | term Div factor
+          | term Div bit
                { $$ = BinaryOpGenCode(Tokens.Div, $1, $3); }
-          | factor
+          | bit
                { $$ = $1; }
           ;
+
+bit		  : bit BitSum factor { 
+								if($1=='i' && $3=='i')
+								{	
+									$$ = 'i';
+									Compiler.EmitCode("or");
+								}
+								else
+								{	
+									yyerrok(); Console.WriteLine("wrong instruction - cannot perform bitwise operation on non-int operands"); Compiler.errors++; YYACCEPT;
+								}
+								}
+		  | bit BitAnd factor { 
+								if($1=='i' && $3=='i')
+								{	
+									$$ = 'i';
+									Compiler.EmitCode("and");
+								}
+								else
+								{	
+									yyerrok(); Console.WriteLine("wrong instruction - cannot perform bitwise operation on non-int operands"); Compiler.errors++; YYACCEPT;
+								}
+								}
+		  | factor { $$ = $1; }
+		  ;
+una		  : BitNeg factor { 
+								if($2=='i')
+								{	
+									$$ = 'i';
+									Compiler.EmitCode("not");
+								}
+								else
+								{	
+									yyerrok(); Console.WriteLine("wrong instruction - cannot perform bitwise operation on non-int operands"); Compiler.errors++; YYACCEPT;
+								}
+								}
+		  | factor { $$ = $1; }
+		  ;
 
 factor    : Int
                {

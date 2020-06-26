@@ -10,15 +10,18 @@ public string  val;
 public char    type;
 }
 
-%token  Program OpenBr CloseBr EOF Print Sc IntT DouT BooT Eq True False Plus OpenPar ClosePar Minus Mult Div LogSum LogInt LE GE LT GT EQ NE If Else Return While Read
-%type <type> content print dek idef exp asn term factor deklar blok ifs log single return els loop read
+%token  Program OpenBr CloseBr EOF Print Sc IntT DouT BooT Eq True False Plus OpenPar ClosePar Minus Mult Div LogSum LogInt LE GE LT GT EQ NE If Else Return While Read BitSum BitAnd BitNeg Not
+%type <type> content print dek idef exp asn term factor deklar blok ifs log single return els loop read bit una inside
 %token <val> Int Str Dou Var 
 
 %%
 
-start	  : Program OpenBr deklar content CloseBr EOF
+start	  : Program OpenBr inside CloseBr EOF
 		  | error EOF { yyerrok();  Compiler.errors++;}
 		  | EOF { yyerrok();  Compiler.errors++;}
+		  ;
+inside	  : deklar content
+		  | error { yyerrok(); Console.WriteLine("unmatched content"); Compiler.errors++; YYACCEPT;  }
 		  ;
 deklar	  : dek deklar
 		  |
@@ -30,7 +33,6 @@ content   : print Sc content
 		  | loop content
 		  | read Sc content
 		  | return
-		  | error { yyerrok(); Console.WriteLine("unmatched content"); Compiler.errors++; YYACCEPT;  }
 		  |
 		  ;
 read	  : Read Var { 
@@ -210,7 +212,7 @@ idef	  : IntT { $$ = 'i';}
 
 asn	  : Var Eq asn { string namei="i_"+$1, named="d_"+$1, nameb = "b_"+$1;
 							Console.WriteLine("$3 to {0}",$3);
-							if(variables.Contains(namei) && $3!='i')
+							if(variables.Contains(namei) && $3=='d')
 							{
 								 Console.WriteLine("  line {0,3}:  semantic error - cannot convert double to int",lineno);
 								 ++Compiler.errors;
@@ -218,14 +220,17 @@ asn	  : Var Eq asn { string namei="i_"+$1, named="d_"+$1, nameb = "b_"+$1;
 							else if(variables.Contains(named))
 							{
 								if($3!='d')Compiler.EmitCode("conv.r8");
+								Compiler.EmitCode("dup");
 								Compiler.EmitCode("stloc {0}",named);
 							}
 							else if(variables.Contains(namei))
 							{
+								Compiler.EmitCode("dup");
 								 Compiler.EmitCode("stloc {0}",namei);
 							}
-							else if(variables.Contains(nameb) && ( $3=='b'))
+							else if(variables.Contains(nameb) && ( $3=='b' || $3=='1' || $3=='0'))
 							{
+								Compiler.EmitCode("dup");
 								Compiler.EmitCode("stloc {0}",nameb);
 							}
 							else
@@ -314,13 +319,81 @@ exp       : exp Plus term
                { $$ = $1; }
           ;
 
-term      : term Mult factor
+term      : term Mult bit
                { $$ = BinaryOpGenCode(Tokens.Mult, $1, $3); }
-          | term Div factor
+          | term Div bit
                { $$ = BinaryOpGenCode(Tokens.Div, $1, $3); }
-          | factor
+          | bit
                { $$ = $1; }
           ;
+
+bit		  : bit BitSum una { 
+								if($1=='i' && $3=='i')
+								{	
+									$$ = 'i';
+									Compiler.EmitCode("or");
+								}
+								else
+								{	
+									yyerrok(); Console.WriteLine("wrong instruction - cannot perform bitwise operation on non-int operands"); Compiler.errors++; YYACCEPT;
+								}
+								}
+		  | bit BitAnd una { 
+								if($1=='i' && $3=='i')
+								{	
+									$$ = 'i';
+									Compiler.EmitCode("and");
+								}
+								else
+								{	
+									yyerrok(); Console.WriteLine("wrong instruction - cannot perform bitwise operation on non-int operands"); Compiler.errors++; YYACCEPT;
+								}
+								}
+		  | una { $$ = $1; }
+		  ;
+una		  : BitNeg factor { 
+								if($2=='i')
+								{	
+									$$ = 'i';
+									Compiler.EmitCode("not");
+								}
+								else
+								{	
+									yyerrok(); Console.WriteLine("wrong instruction - cannot perform bitwise operation on non-int operands"); Compiler.errors++; YYACCEPT;
+								}
+								}
+		  | Minus factor { 
+								if($2=='i')
+								{	
+									$$ = 'i';
+									Compiler.EmitCode("neg");
+								}
+								else if($2=='d')
+								{	
+									$$ = 'd';
+									Compiler.EmitCode("neg");
+								}
+								else
+								{	
+									yyerrok(); Console.WriteLine("wrong instruction - unary minus only on int or double operands"); Compiler.errors++; YYACCEPT;
+								}
+								}
+		  | Not factor { 
+								if($2=='b')
+								{	
+									$$ = 'b';
+									Compiler.EmitCode("ldc.i4 0");
+									Compiler.EmitCode("ceq");
+								}
+								else
+								{	
+									yyerrok(); Console.WriteLine("wrong instruction - cannot perform bitwise negation on boolean operands"); Compiler.errors++; YYACCEPT;
+								}
+								}
+		  | OpenPar IntT ClosePar factor { Compiler.EmitCode("conv.i4"); $$='i'; }
+		  | OpenPar DouT ClosePar factor { Compiler.EmitCode("conv.r8"); $$='d';  }
+		  | factor { $$ = $1; }
+		  ;
 
 factor    : Int
                {
