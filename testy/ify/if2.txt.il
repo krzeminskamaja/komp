@@ -8,43 +8,41 @@
 
 // prolog
 
-.locals init(float64 temp)
-ldc.r8 0
-stloc temp
-
-.locals init(int32 tempInt)
+ldc.i4 2
 ldc.i4 0
-stloc tempInt
-
-.locals init (int32 i_a)
-ldc.i4 0
-stloc i_a
-
-ldc.i4 1
-stloc i_a
-IL_1398055875: nop
-ldloc i_a
-ldc.i4 10
 cgt
+
+brfalse IL_461636404
+ldstr "w 1 if"
+call void [mscorlib]System.Console::Write(string)
+
+ldc.i4 3
 ldc.i4 0
-ceq
+clt
 
-brfalse IL_85108188
-ldstr "a"
+brfalse IL_2084861957
+ldstr "w 2 if"
 call void [mscorlib]System.Console::Write(string)
 
-ldloc i_a
-call void [mscorlib]System.Console::Write(int32)
-
-ldstr "\n"
+br IL_1748608264
+IL_2084861957: nop 
+ldstr "w 2 else"
 call void [mscorlib]System.Console::Write(string)
 
-ldloc i_a
 ldc.i4 1
-add
-stloc i_a
-br IL_1398055875
-IL_85108188: nop
+
+brfalse IL_1896081294
+ldstr "trzeci if"
+call void [mscorlib]System.Console::Write(string)
+
+br IL_1385481699
+IL_1896081294: nop 
+ldc.i4 0
+IL_1385481699: nop 
+IL_1748608264: nop 
+br IL_1314875552
+IL_461636404: nop 
+IL_1314875552: nop 
 leave EndMain
 }
 catch [mscorlib]System.Exception

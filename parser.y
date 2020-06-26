@@ -32,40 +32,42 @@ content   : print Sc content
 		  | error { yyerrok(); Console.WriteLine("unmatched content"); Compiler.errors++; YYACCEPT;  }
 		  |
 		  ;
-ifs		  : If OpenPar log ClosePar { 
+ifs		  : If OpenPar log ClosePar { Compiler.licznikIf++;
 									Random r = new Random();
 									int n = 0;
 									while(Compiler.labelSet.Contains(n) || n<1)
 										n=r.Next();
 									Compiler.labelSet.Add(n);
-									 Compiler.labelIf= "IL_"+n.ToString();
-									 Console.WriteLine(Compiler.labelIf);
-									Compiler.EmitCode("brfalse {0}",Compiler.labelIf);
+									 Compiler.labelIf.Add("IL_"+n.ToString());
+									 while(Compiler.labelSet.Contains(n) || n<1)
+										n=r.Next();
+									Compiler.labelSet.Add(n);
+									 Compiler.labelEndIf.Add("IL_"+n.ToString());
+									Compiler.EmitCode("brfalse {0}",Compiler.labelIf[Compiler.licznikIf]);
 									} 
-									single els
+									single { Compiler.EmitCode("br {0}", Compiler.labelEndIf[Compiler.licznikIf]); } els 
 		  ;
-els		  : Else { Compiler.EmitCode("{0}: nop ",Compiler.labelIf); }   single
-		  | { Compiler.EmitCode("{0}: nop ",Compiler.labelIf); }  
+els		  : Else { Compiler.EmitCode("{0}: nop ",Compiler.labelIf[Compiler.licznikIf]); }   single { Compiler.EmitCode("{0}: nop ",Compiler.labelEndIf[Compiler.licznikIf]); Compiler.licznikIf--; Compiler.labelEndIf.RemoveAt(Compiler.labelEndIf.Count - 1); }
+		  | { Compiler.EmitCode("{0}: nop ",Compiler.labelIf[Compiler.licznikIf]);  Compiler.EmitCode("{0}: nop ",Compiler.labelEndIf[Compiler.licznikIf]); Compiler.licznikIf--; Compiler.labelEndIf.RemoveAt(Compiler.labelEndIf.Count - 1); }  
 		  ;
 loop	  : 
 									 While 
-							{ Random r = new Random();
+							{ Compiler.licznikPetli++; 
+							Random r = new Random();
 									int n = 0;
 									while(Compiler.labelSet.Contains(n) || n<1)
 										n=r.Next();
 									Compiler.labelSet.Add(n);
-									 Compiler.labelWhileAfter= "IL_"+n.ToString();
-									 Console.WriteLine(Compiler.labelWhileAfter);
+									 Compiler.labelWhileAfter.Add("IL_"+n.ToString());
 									while(Compiler.labelSet.Contains(n) || n<1)
 										n=r.Next();
 									Compiler.labelSet.Add(n);
-									 Compiler.labelWhileBefore= "IL_"+n.ToString();
-									 Console.WriteLine(Compiler.labelWhileBefore);
-									 Compiler.EmitCode("{0}: nop",Compiler.labelWhileBefore);} 
+									 Compiler.labelWhileBefore.Add("IL_"+n.ToString());
+									 Compiler.EmitCode("{0}: nop",Compiler.labelWhileBefore[Compiler.licznikPetli]);} 
 									 OpenPar log ClosePar
-									 { Compiler.EmitCode("brfalse {0}",Compiler.labelWhileAfter); } 
+									 { Compiler.EmitCode("brfalse {0}",Compiler.labelWhileAfter[Compiler.licznikPetli]); } 
 									 single
-									 { Compiler.EmitCode("br {0}",Compiler.labelWhileBefore); Compiler.EmitCode("{0}: nop",Compiler.labelWhileAfter); }
+									 { Compiler.EmitCode("br {0}",Compiler.labelWhileBefore[Compiler.licznikPetli]); Compiler.EmitCode("{0}: nop",Compiler.labelWhileAfter[Compiler.licznikPetli]); Compiler.licznikPetli--; Compiler.labelWhileAfter.RemoveAt(Compiler.labelWhileAfter.Count - 1);Compiler.labelWhileBefore.RemoveAt(Compiler.labelWhileBefore.Count - 1);}
 							;
 return    : Return Sc { Random r = new Random();
 									int n = 0;
@@ -78,6 +80,7 @@ return    : Return Sc { Random r = new Random();
 single	  : blok
 		  | asn Sc
 		  | print Sc
+		  | loop
 		  | ifs
 		  | return
 		  ;

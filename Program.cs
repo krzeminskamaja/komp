@@ -11,17 +11,20 @@ public class Compiler
     public static HashSet<int> labelSet = new HashSet<int>();
     public static string labelTrue = "";
     public static string labelFalse = "";
-    public static string labelIf = "";
+    public static int licznikIf = -1;
+    public static List<string> labelIf = new List<string>();
+    public static List<string> labelEndIf = new List<string>();
     public static string labelReturn = "";
-    public static string labelWhileBefore = "";
-    public static string labelWhileAfter = "";
+    public static List<string> labelWhileBefore = new List<string>();
+    public static List<string> labelWhileAfter = new List<string>();
+    public static int licznikPetli = -1;
     public static List<string> source;
 
     // arg[0] określa plik źródłowy
     // pozostałe argumenty są ignorowane
     public static int Main(string[] args)
     {
-        string file;
+        string file; 
         FileStream source;
         Console.WriteLine("\nSingle-Pass CIL Code Generator for Multiline Calculator - Gardens Point");
         if (args.Length >= 1)

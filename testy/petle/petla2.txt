@@ -1,4 +1,32 @@
 program{
-	while(1<0)
-		0;
+	int a;
+	int b;
+	a = 1;
+	b=1;
+	while (a <= 10)
+	{
+		write a;
+		while(b<2)
+		{	
+			write "wewnatrz";
+			b = b+1;
+		}
+		b = b-1;
+		write "\n";
+		a = a + 1;
+	}
+	a = 1;
+	b = 1;
+	while (a <= 10)
+	{
+		write a;
+		while(b<2)
+		{	
+			write "wewnatrz";
+			b = b+1;
+		}
+		b = b-1;
+		write "\n";
+		a = a + 1;
+	}
 }

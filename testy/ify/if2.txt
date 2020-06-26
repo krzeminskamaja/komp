@@ -1,0 +1,19 @@
+program{
+	if(2>0)
+	{
+		write "w 1 if";
+		if(3<0)
+		{
+			write "w 2 if";
+		}
+		else
+		{	
+			write "w 2 else";
+			if (true)
+				write "trzeci if";
+			else
+				0;
+		}
+	}
+
+}
