@@ -14,17 +14,19 @@ ldc.i4 1
 ldc.i4 2
 cgt
 
-brfalse IL_682865821
+brfalse IL_1066058593
 ldstr "jestem w if"
 call void [mscorlib]System.Console::Write(string)
 
 ldc.i4 2
 ldc.i4 3
 add
-IL_682865821: nop 
+br IL_445654091
+IL_1066058593: nop 
 ldstr "jestem w else"
 call void [mscorlib]System.Console::Write(string)
 
+IL_445654091: nop 
 ldstr "po if"
 call void [mscorlib]System.Console::Write(string)
 

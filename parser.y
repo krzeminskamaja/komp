@@ -10,8 +10,8 @@ public string  val;
 public char    type;
 }
 
-%token  Program OpenBr CloseBr EOF Print Sc IntT DouT BooT Eq True False Plus OpenPar ClosePar Minus Mult Div LogSum LogInt LE GE LT GT EQ NE If Else Return While
-%type <type> content print dek idef exp asn term factor deklar blok ifs log single return els loop
+%token  Program OpenBr CloseBr EOF Print Sc IntT DouT BooT Eq True False Plus OpenPar ClosePar Minus Mult Div LogSum LogInt LE GE LT GT EQ NE If Else Return While Read
+%type <type> content print dek idef exp asn term factor deklar blok ifs log single return els loop read
 %token <val> Int Str Dou Var 
 
 %%
@@ -28,9 +28,35 @@ content   : print Sc content
 		  | blok content
 		  | ifs content
 		  | loop content
+		  | read Sc content
 		  | return
 		  | error { yyerrok(); Console.WriteLine("unmatched content"); Compiler.errors++; YYACCEPT;  }
 		  |
+		  ;
+read	  : Read Var { 
+							Compiler.EmitCode("call string [mscorlib]System.Console::ReadLine()");
+							
+							string namei = "i_"+$2,nameb ="b_"+$2,named="d_"+$2;
+							if(variables.Contains(namei))
+							{	
+								Compiler.EmitCode("ldloca {0}",namei);
+								Compiler.EmitCode("call bool [mscorlib]System.Int32::TryParse(string, int32&)");
+							}
+							else if(variables.Contains(nameb))
+							{
+								Compiler.EmitCode("ldloca {0}",nameb);
+								Compiler.EmitCode("call bool [mscorlib]System.Boolean::TryParse(string, bool&)");
+							}
+							else if(variables.Contains(named))
+							{
+								Compiler.EmitCode("ldloca {0}",named);
+								Compiler.EmitCode("call bool [mscorlib]System.Double::TryParse(string, float64&)");
+							}
+							else
+							{
+							yyerrok(); Console.WriteLine("undeclared variable {0}",$1); Compiler.errors++;
+							}
+							}
 		  ;
 ifs		  : If OpenPar log ClosePar { Compiler.licznikIf++;
 									Random r = new Random();
@@ -80,6 +106,7 @@ return    : Return Sc { Random r = new Random();
 single	  : blok
 		  | asn Sc
 		  | print Sc
+		  | read Sc
 		  | loop
 		  | ifs
 		  | return

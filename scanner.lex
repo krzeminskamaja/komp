@@ -20,6 +20,7 @@ Var [a-zA-Z]+[0-9]*
 "int"				{ return (int)Tokens.IntT; }
 "double"			{ return (int)Tokens.DouT; }
 "bool"				{ return (int)Tokens.BooT; }
+"read"				{ return (int)Tokens.Read; }
 "program"			{ return (int)Tokens.Program; }
 "write"				{ return (int)Tokens.Print; }
 "true"				{ return (int)Tokens.True; }

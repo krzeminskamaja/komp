@@ -1,19 +1,24 @@
 program{
+	int a;
 	if(2>0)
 	{
 		write "w 1 if";
+		read a;
+		write a;
 		if(3<0)
 		{
 			write "w 2 if";
+			read a;
+			write a;
 		}
 		else
 		{	
 			write "w 2 else";
 			if (true)
-				write "trzeci if";
+				read a;
 			else
 				0;
 		}
 	}
-
+	write a;
 }

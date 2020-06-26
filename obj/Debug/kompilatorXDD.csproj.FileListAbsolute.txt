@@ -5,3 +5,4 @@ C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\bin\Debug\QUT.ShiftReduce
 C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Debug\kompilatorXDD.csproj.CoreCompileInputs.cache
 C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Debug\kompilatorXDD.exe
 C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Debug\kompilatorXDD.pdb
+C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Debug\kompilatorXDD.csprojResolveAssemblyReference.cache
