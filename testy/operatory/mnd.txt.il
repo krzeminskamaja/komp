@@ -16,37 +16,25 @@ stloc temp
 ldc.i4 0
 stloc tempInt
 
-.locals init (bool b_b)
+.locals init (bool b_a)
 ldc.i4 0
-stloc b_b
+stloc b_a
 
-.locals init (int32 i_x)
-ldc.i4 0
-stloc i_x
-
+ldc.i4 8
+ldc.i4 8
+mul
 ldc.i4 9
-ldc.i4 0
-ceq
-
-brfalse IL_2139402448
+ldc.i4 9
+mul
+add
 ldc.i4 1
+clt
 
-brfalse IL_2139402448
-ldc.i4 1
-br IL_1465776772
-IL_2139402448: ldc.i4 0
-IL_1465776772: nop
 dup
-stloc b_b
-ldloc b_b
+stloc b_a
+pop
+ldloc b_a
 call void [mscorlib]System.Console::Write(bool)
-
-ldc.i4 9
-neg
-dup
-stloc i_x
-ldloc i_x
-call void [mscorlib]System.Console::Write(int32)
 
 leave EndMain
 }

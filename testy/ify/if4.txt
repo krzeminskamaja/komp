@@ -1,0 +1,9 @@
+program{
+	double x;
+	double y;
+	x=0.5;
+	y=0.2;
+	if(x * x + y * y <= 1)
+		x = x + 1;
+	write x;
+}

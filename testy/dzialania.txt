@@ -1,13 +1,5 @@
 program{
-	double i;
-	double j;
 	bool b;
-	i + 1;
+	b = 3 == 9 && false;
 	write b;
-	write "\n";
-	i = (2  + 5) *3 ;
-	write i;
-	j = i;
-	write "\n";
-	write j;
 }

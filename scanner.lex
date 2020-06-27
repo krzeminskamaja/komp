@@ -2,17 +2,17 @@
 %using QUT.Gppg;
 %namespace GardensPoint
 
-Cmt "//"\.*[\n]
-Dou [0-9]+.[0-9]+
-Int [0-9]+
+Cmt "//".*[\n]
+Dou (([1-9][0-9]*)|[0])+\.[0-9]+
+Int ([1-9][0-9]*)|[0]
 Str \"([^\\\"\n]|\\.)*\"
-Var [a-zA-Z]+[0-9]*
+Var [a-zA-Z]+[a-zA-Z0-9]*
 
 
 
 %%
 
-{Cmt}				{  }
+{Cmt}				{ Compiler.lineno++; }
 {Int}				{ yylval.val=yytext; return (int)Tokens.Int; }
 {Dou}				{ yylval.val=yytext; return (int)Tokens.Dou; }
 {Str}				{ yylval.val=yytext; return (int)Tokens.Str; }
@@ -52,7 +52,7 @@ Var [a-zA-Z]+[0-9]*
 "!="				{ return (int)Tokens.NE; }
 <<EOF>>				{ return (int)Tokens.EOF; }
 " "					{ }
-"\n"				{ }
+"\n"				{ Compiler.lineno++; }
 "\r"				{ }
 "\t"				{ }
 {Var}				{ yylval.val=yytext; return (int)Tokens.Var; }

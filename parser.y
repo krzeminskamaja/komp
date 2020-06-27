@@ -11,23 +11,24 @@ public char    type;
 }
 
 %token  Program OpenBr CloseBr EOF Print Sc IntT DouT BooT Eq True False Plus OpenPar ClosePar Minus Mult Div LogSum LogInt LE GE LT GT EQ NE If Else Return While Read BitSum BitAnd BitNeg Not
-%type <type> content print dek idef exp asn term factor deklar blok ifs log single return els loop read bit una inside
+%type <type> content print dek idef exp asn term factor deklar blok ifs log single return els loop read bit una inside 
 %token <val> Int Str Dou Var 
 
 %%
 
-start	  : Program OpenBr inside CloseBr EOF
-		  | error EOF { yyerrok();  Compiler.errors++;}
-		  | EOF { yyerrok();  Compiler.errors++;}
+start	  : Program OpenBr { Compiler.EmitCode(".maxstack {0}",Compiler.maxStack); } inside CloseBr EOF
+		  | error EOF { yyerrok();  Console.WriteLine("line {0}: mismatched content",Compiler.lineno);  Compiler.errors++;  }
+		  | EOF { yyerrok();  Console.WriteLine("line {0}: mismatched content",Compiler.lineno);  Compiler.errors++; }
 		  ;
 inside	  : deklar content
-		  | error { yyerrok(); Console.WriteLine("unmatched content"); Compiler.errors++; YYACCEPT;  }
+		  | error { yyerrok(); Console.WriteLine("line {0}: mismatched content",Compiler.lineno); Compiler.errors++; YYACCEPT; }
 		  ;
 deklar	  : dek deklar
 		  |
 		  ;
+
 content   : print Sc content
-		  | asn Sc content
+		  | asn Sc { if(Compiler.errors==0) Compiler.EmitCode("pop"); } content
 		  | blok content
 		  | ifs content
 		  | loop content
@@ -56,57 +57,58 @@ read	  : Read Var {
 							}
 							else
 							{
-							yyerrok(); Console.WriteLine("undeclared variable {0}",$1); Compiler.errors++;
+							yyerrok(); Console.WriteLine("line {0}: undeclared variable {1}",Compiler.lineno,$2); Compiler.errors++;
 							}
 							}
 		  ;
-ifs		  : If OpenPar log ClosePar { Compiler.licznikIf++;
-									Random r = new Random();
+ifs		  : If OpenPar log ClosePar {  if( $3!='b' && $3!='0' && $3!='1'){ yyerrok(); Console.WriteLine("line {0}: if condition not bool", Compiler.lineno); Compiler.errors++; }
+									Compiler.licznikIf++;
+									 
 									int n = 0;
 									while(Compiler.labelSet.Contains(n) || n<1)
-										n=r.Next();
+										n=Compiler.r.Next();
 									Compiler.labelSet.Add(n);
 									 Compiler.labelIf.Add("IL_"+n.ToString());
 									 while(Compiler.labelSet.Contains(n) || n<1)
-										n=r.Next();
+										n=Compiler.r.Next();
 									Compiler.labelSet.Add(n);
 									 Compiler.labelEndIf.Add("IL_"+n.ToString());
 									Compiler.EmitCode("brfalse {0}",Compiler.labelIf[Compiler.licznikIf]);
 									} 
-									single { Compiler.EmitCode("br {0}", Compiler.labelEndIf[Compiler.licznikIf]); } els 
+									single { Compiler.EmitCode("br {0}", Compiler.labelEndIf[Compiler.licznikIf]); } els { Compiler.licznikIf--; Compiler.labelIf.RemoveAt(Compiler.labelIf.Count - 1); Compiler.labelEndIf.RemoveAt(Compiler.labelEndIf.Count - 1); }
 		  ;
-els		  : Else { Compiler.EmitCode("{0}: nop ",Compiler.labelIf[Compiler.licznikIf]); }   single { Compiler.EmitCode("{0}: nop ",Compiler.labelEndIf[Compiler.licznikIf]); Compiler.licznikIf--; Compiler.labelEndIf.RemoveAt(Compiler.labelEndIf.Count - 1); }
-		  | { Compiler.EmitCode("{0}: nop ",Compiler.labelIf[Compiler.licznikIf]);  Compiler.EmitCode("{0}: nop ",Compiler.labelEndIf[Compiler.licznikIf]); Compiler.licznikIf--; Compiler.labelEndIf.RemoveAt(Compiler.labelEndIf.Count - 1); }  
+els		  : Else { Compiler.EmitCode("{0}: nop ",Compiler.labelIf[Compiler.licznikIf]); }   single { Compiler.EmitCode("{0}: nop ",Compiler.labelEndIf[Compiler.licznikIf]);  }
+		  | { Compiler.EmitCode("{0}: nop ",Compiler.labelIf[Compiler.licznikIf]);  Compiler.EmitCode("{0}: nop ",Compiler.labelEndIf[Compiler.licznikIf]); }  
 		  ;
 loop	  : 
 									 While 
 							{ Compiler.licznikPetli++; 
-							Random r = new Random();
+							 
 									int n = 0;
 									while(Compiler.labelSet.Contains(n) || n<1)
-										n=r.Next();
+										n=Compiler.r.Next();
 									Compiler.labelSet.Add(n);
 									 Compiler.labelWhileAfter.Add("IL_"+n.ToString());
 									while(Compiler.labelSet.Contains(n) || n<1)
-										n=r.Next();
+										n=Compiler.r.Next();
 									Compiler.labelSet.Add(n);
 									 Compiler.labelWhileBefore.Add("IL_"+n.ToString());
 									 Compiler.EmitCode("{0}: nop",Compiler.labelWhileBefore[Compiler.licznikPetli]);} 
 									 OpenPar log ClosePar
-									 { Compiler.EmitCode("brfalse {0}",Compiler.labelWhileAfter[Compiler.licznikPetli]); } 
+									 { if( $4!='b' && $4!='0' && $4!='1'){ yyerrok(); Console.WriteLine("line {0}: loop condition not bool",Compiler.lineno); Compiler.errors++; Compiler.licznikPetli--; Compiler.labelWhileAfter.RemoveAt(Compiler.labelWhileAfter.Count - 1);Compiler.labelWhileBefore.RemoveAt(Compiler.labelWhileBefore.Count - 1);} Compiler.EmitCode("brfalse {0}",Compiler.labelWhileAfter[Compiler.licznikPetli]); } 
 									 single
 									 { Compiler.EmitCode("br {0}",Compiler.labelWhileBefore[Compiler.licznikPetli]); Compiler.EmitCode("{0}: nop",Compiler.labelWhileAfter[Compiler.licznikPetli]); Compiler.licznikPetli--; Compiler.labelWhileAfter.RemoveAt(Compiler.labelWhileAfter.Count - 1);Compiler.labelWhileBefore.RemoveAt(Compiler.labelWhileBefore.Count - 1);}
 							;
-return    : Return Sc { Random r = new Random();
+return    : Return Sc {  
 									int n = 0;
 									while(Compiler.labelSet.Contains(n) || n<1)
-										n=r.Next();
+										n=Compiler.r.Next();
 									Compiler.labelSet.Add(n);
 									 Compiler.labelReturn= "IL_"+n.ToString();
 									 Console.WriteLine(Compiler.labelReturn); Compiler.EmitCode("br {0}",Compiler.labelReturn); }
 		  ;
 single	  : blok
-		  | asn Sc
+		  | asn Sc { if(Compiler.errors==0) Compiler.EmitCode("pop"); } 
 		  | print Sc
 		  | read Sc
 		  | loop
@@ -145,7 +147,7 @@ Compiler.EmitCode("ldstr {0}",$2); Compiler.EmitCode("call void [mscorlib]System
 															Compiler.EmitCode("");
 									}
 							}
-		  | Print error { yyerrok();  Compiler.errors++;}
+		  | Print error { yyerrok(); Console.WriteLine("line {0}: print error",Compiler.lineno); Compiler.errors++;}
 		  ;
 dek		  : idef Var Sc { if(!variables.Contains("temp")){ Compiler.EmitCode(".locals init(float64 temp)");Compiler.EmitCode("ldc.r8 {0}",0);
 											Compiler.EmitCode("stloc temp");Compiler.EmitCode(""); variables.Add("temp");}
@@ -166,7 +168,7 @@ string name = "";
 											Console.WriteLine("dodane variable {0}",name);
 										}
 										else{
-											yyerrok(); Console.WriteLine("variable already declared"); Compiler.errors++;
+											yyerrok(); Console.WriteLine("line {0}: variable already declared",Compiler.lineno); Compiler.errors++;
 										}
 									break;
 									case 'b':
@@ -181,7 +183,7 @@ string name = "";
 										Console.WriteLine("dodane variable {0}",name);
 										}
 										else{
-											yyerrok(); Console.WriteLine("variable already declared"); Compiler.errors++;
+											yyerrok(); Console.WriteLine("line {0}: variable already declared",Compiler.lineno); Compiler.errors++;
 										}
 
 									break;
@@ -197,7 +199,7 @@ string name = "";
 										Console.WriteLine("dodane variable {0}",name);
 										}
 										else{
-											yyerrok(); Console.WriteLine("variable already declared"); Compiler.errors++;
+											yyerrok(); Console.WriteLine("line {0}: variable already declared",Compiler.lineno); Compiler.errors++;
 										}
 
 									break;
@@ -210,50 +212,63 @@ idef	  : IntT { $$ = 'i';}
 		  | BooT { $$ = 'b';} 
 		  ;
 
-asn	  : Var Eq asn { string namei="i_"+$1, named="d_"+$1, nameb = "b_"+$1;
+asn	  :  Var Eq asn { string namei="i_"+$1, named="d_"+$1, nameb = "b_"+$1;
 							Console.WriteLine("$3 to {0}",$3);
 							if(variables.Contains(namei) && $3=='d')
 							{
-								 Console.WriteLine("  line {0,3}:  semantic error - cannot convert double to int",lineno);
+								 Console.WriteLine("line {0}:  semantic error - cannot convert types",Compiler.lineno);
 								 ++Compiler.errors;
 							}
-							else if(variables.Contains(named))
+							else if(variables.Contains(named) && $3!='b' )
 							{
 								if($3!='d')Compiler.EmitCode("conv.r8");
 								Compiler.EmitCode("dup");
 								Compiler.EmitCode("stloc {0}",named);
+								$$ = 'd';
 							}
-							else if(variables.Contains(namei))
+							else if(variables.Contains(namei) && $3=='i' )
 							{
 								Compiler.EmitCode("dup");
 								 Compiler.EmitCode("stloc {0}",namei);
+								 $$='i';
 							}
-							else if(variables.Contains(nameb) && ( $3=='b' || $3=='1' || $3=='0'))
+							else if(variables.Contains(nameb) && ( $3!='i' || $3!='d'))
 							{
 								Compiler.EmitCode("dup");
 								Compiler.EmitCode("stloc {0}",nameb);
+								$$='b';
 							}
 							else
 							{
-								yyerrok(); Console.WriteLine("undeclared variable {0}",$1); Compiler.errors++;
+								yyerrok(); Console.WriteLine("line {0}: undeclared variable {1} or mismatched types",Compiler.lineno,$1); Compiler.errors++;
 							}
 						}
 		  
-		  | log 
+		  | log { $$ = $1;  Console.WriteLine("Przypisano w log {0}",$$);  }
 		  ;
-log		  : log {	Random r = new Random();
+log		  : log {	
+					if($1=='i' ||$1=='d')
+					{		
+						yyerrok(); Console.WriteLine("line {0}: wrong instruction - cannot perform logical operation on non-bool operands",Compiler.lineno); Compiler.errors++; 
+					}
+					 
 					int n = 0;
 					while(Compiler.labelSet.Contains(n) || n<1)
-						n=r.Next();
+						n=Compiler.r.Next();
 					Compiler.labelSet.Add(n);
 					 Compiler.labelFalse= "IL_"+n.ToString();
 					 Console.WriteLine(Compiler.labelFalse);
 					Compiler.EmitCode("brfalse {0}",Compiler.labelFalse);
 					} LogInt  rel { 
-					Random r = new Random();
+					if($4.type!='b' && $4.type!='0' && $4.type!='1')
+					{		
+						yyerrok(); Console.WriteLine("line {0}: wrong instruction - cannot perform logical operation on non-bool operands",Compiler.lineno); Compiler.errors++; 
+					}
+					Console.WriteLine("$ w sumie jest rowne {0}",$4.type);
+					 
 					int n = 0;
 					while(Compiler.labelSet.Contains(n) || n<1)
-						n=r.Next();
+						n=Compiler.r.Next();
 					Compiler.labelSet.Add(n);
 					 Compiler.labelTrue= "IL_"+n.ToString();
 
@@ -270,18 +285,27 @@ log		  : log {	Random r = new Random();
 					Compiler.EmitCode("{0}: nop",Compiler.labelTrue);
 					$$ = 'b';
 					}
-		  | log {	Random r = new Random();
+		  | log {	if($1=='i' ||$1=='d')
+					{		
+						yyerrok(); Console.WriteLine("line {0}: wrong instruction - cannot perform logical operation on non-bool operands",Compiler.lineno); Compiler.errors++; 
+					}
+					 
 					int n = 0;
 					while(Compiler.labelSet.Contains(n) || n<1)
-						n=r.Next();
+						n=Compiler.r.Next();
 					Compiler.labelSet.Add(n);
 					 Compiler.labelTrue = "IL_"+n.ToString();
 					Compiler.EmitCode("brtrue {0}",Compiler.labelTrue); 
 					}  LogSum rel { 
-					Random r = new Random();
+					if($4.type!='b' && $4.type!='0' && $4.type!='1')
+					{		
+						yyerrok(); Console.WriteLine("line {0}: wrong instruction - cannot perform logical operation on non-bool operands",Compiler.lineno); Compiler.errors++; 
+					}
+					Console.WriteLine("$ w sumie jest rowne {0}",$4.type);
+					 
 					int n = 0;
 					while(Compiler.labelSet.Contains(n) || n<1)
-						n=r.Next();
+						n=Compiler.r.Next();
 					Compiler.labelSet.Add(n);
 					 Compiler.labelFalse = "IL_"+n.ToString();
 
@@ -300,15 +324,25 @@ log		  : log {	Random r = new Random();
 					$$ = 'b';
 					}
 
-		  | rel 
+		  | rel { $$ = $1.type;  Console.WriteLine("Przypisano w rel {0}",$$);  }
 		  ;
-rel		  : rel LE exp { Compiler.EmitCode("clt"); Compiler.EmitCode(""); $$.type = 'b';}
-		  | rel LT exp { Compiler.EmitCode("cgt"); Compiler.EmitCode("ldc.i4 0");Compiler.EmitCode("ceq"); Compiler.EmitCode(""); $$.type = 'b';}
-		  | rel GE exp { Compiler.EmitCode("cgt"); Compiler.EmitCode(""); $$.type = 'b'; }
-		  | rel GT exp { Compiler.EmitCode("clt"); Compiler.EmitCode("ldc.i4 0");Compiler.EmitCode("ceq"); Compiler.EmitCode(""); $$.type = 'b';}
-		  | rel EQ exp { Compiler.EmitCode("ceq"); Compiler.EmitCode("");$$.type = 'b'; }
-		  | rel NE exp { Compiler.EmitCode("ceq"); Compiler.EmitCode("ldc.i4 0");Compiler.EmitCode("ceq"); Compiler.EmitCode(""); $$.type = 'b';}
-		  | exp 
+rel		  : rel { if($1.type=='i')Compiler.EmitCode("conv.r8"); } LE exp { List<char> allowed = new List<char>{'0','1','b'}; if(allowed.Contains($1.type) || allowed.Contains($4)){
+																		yyerrok(); Console.WriteLine("line {0}: wrong instruction - cannot perform less relation operation on bool operands",Compiler.lineno); Compiler.errors++; 
+																	}
+			if($4=='i')Compiler.EmitCode("conv.r8");
+			Compiler.EmitCode("clt"); Compiler.EmitCode(""); $$.type = 'b';}
+		  | rel { if($1.type=='i')Compiler.EmitCode("conv.r8"); } LT exp { List<char> allowed = new List<char>{'0','1','b'}; if(allowed.Contains($1.type) || allowed.Contains($4)){
+																		yyerrok(); Console.WriteLine("line {0}: wrong instruction - cannot perform less-equal relation operation on bool operands",Compiler.lineno); Compiler.errors++; 
+																	} if($4=='i')Compiler.EmitCode("conv.r8"); Compiler.EmitCode("cgt"); Compiler.EmitCode("ldc.i4 0");Compiler.EmitCode("ceq"); Compiler.EmitCode(""); $$.type = 'b';}
+		  | rel { if($1.type=='i')Compiler.EmitCode("conv.r8"); } GE exp { List<char> allowed = new List<char>{'0','1','b'}; if(allowed.Contains($1.type) || allowed.Contains($4)){
+																		yyerrok(); Console.WriteLine("line {0}: wrong instruction - cannot perform greater relation operation on bool operands",Compiler.lineno); Compiler.errors++; 
+																	} if($4=='i')Compiler.EmitCode("conv.r8"); Compiler.EmitCode("cgt"); Compiler.EmitCode(""); $$.type = 'b'; }
+		  | rel { if($1.type=='i')Compiler.EmitCode("conv.r8"); } GT exp { List<char> allowed = new List<char>{'0','1','b'}; if(allowed.Contains($1.type) || allowed.Contains($4)){
+																		yyerrok(); Console.WriteLine("line {0}: wrong instruction - cannot perform greater-equal relation operation on bool operands",Compiler.lineno); Compiler.errors++; 
+																	} if($4=='i')Compiler.EmitCode("conv.r8"); Compiler.EmitCode("clt"); Compiler.EmitCode("ldc.i4 0");Compiler.EmitCode("ceq"); Compiler.EmitCode(""); $$.type = 'b';}
+		  | rel { if($1.type=='i')Compiler.EmitCode("conv.r8"); } EQ exp { if($4=='i')Compiler.EmitCode("conv.r8"); Compiler.EmitCode("ceq"); Compiler.EmitCode("");$$.type = 'b'; }
+		  | rel { if($1.type=='i')Compiler.EmitCode("conv.r8"); } NE exp {  if($4=='i')Compiler.EmitCode("conv.r8"); Compiler.EmitCode("ceq"); Compiler.EmitCode("ldc.i4 0");Compiler.EmitCode("ceq"); Compiler.EmitCode(""); $$.type = 'b';}
+		  | exp { $$.type = $1; Console.WriteLine("Przypisano w exp {0}",$$.type); }
 		  ;
 
 exp       : exp Plus term
@@ -335,7 +369,7 @@ bit		  : bit BitSum una {
 								}
 								else
 								{	
-									yyerrok(); Console.WriteLine("wrong instruction - cannot perform bitwise operation on non-int operands"); Compiler.errors++; YYACCEPT;
+									yyerrok(); Console.WriteLine("line {0}: wrong instruction - cannot perform bitwise operation on non-int operands",Compiler.lineno); Compiler.errors++; 
 								}
 								}
 		  | bit BitAnd una { 
@@ -346,12 +380,12 @@ bit		  : bit BitSum una {
 								}
 								else
 								{	
-									yyerrok(); Console.WriteLine("wrong instruction - cannot perform bitwise operation on non-int operands"); Compiler.errors++; YYACCEPT;
+									yyerrok(); Console.WriteLine("line {0}: wrong instruction - cannot perform bitwise operation on non-int operands",Compiler.lineno); Compiler.errors++; 
 								}
 								}
 		  | una { $$ = $1; }
 		  ;
-una		  : BitNeg factor { 
+una		  : BitNeg una { 
 								if($2=='i')
 								{	
 									$$ = 'i';
@@ -359,10 +393,10 @@ una		  : BitNeg factor {
 								}
 								else
 								{	
-									yyerrok(); Console.WriteLine("wrong instruction - cannot perform bitwise operation on non-int operands"); Compiler.errors++; YYACCEPT;
+									yyerrok(); Console.WriteLine("line {0}: wrong instruction - cannot perform bitwise operation on non-int operands",Compiler.lineno); Compiler.errors++; 
 								}
 								}
-		  | Minus factor { 
+		  | Minus una { 
 								if($2=='i')
 								{	
 									$$ = 'i';
@@ -375,11 +409,11 @@ una		  : BitNeg factor {
 								}
 								else
 								{	
-									yyerrok(); Console.WriteLine("wrong instruction - unary minus only on int or double operands"); Compiler.errors++; YYACCEPT;
+									yyerrok(); Console.WriteLine("line {0}: wrong instruction - unary minus only on int or double operands", Compiler.lineno); Compiler.errors++; 
 								}
 								}
-		  | Not factor { 
-								if($2=='b')
+		  | Not una { List<char> allowed = new List<char>{ '0','1','b' };
+								if(allowed.Contains($2))
 								{	
 									$$ = 'b';
 									Compiler.EmitCode("ldc.i4 0");
@@ -387,11 +421,11 @@ una		  : BitNeg factor {
 								}
 								else
 								{	
-									yyerrok(); Console.WriteLine("wrong instruction - cannot perform bitwise negation on boolean operands"); Compiler.errors++; YYACCEPT;
+									yyerrok(); Console.WriteLine("line {0}: wrong instruction - cannot perform bitwise negation on non-boolean operands",Compiler.lineno); Compiler.errors++; 
 								}
 								}
-		  | OpenPar IntT ClosePar factor { Compiler.EmitCode("conv.i4"); $$='i'; }
-		  | OpenPar DouT ClosePar factor { Compiler.EmitCode("conv.r8"); $$='d';  }
+		  | OpenPar IntT ClosePar una { Compiler.EmitCode("conv.i4"); $$='i'; }
+		  | OpenPar DouT ClosePar una { Compiler.EmitCode("conv.r8"); $$='d';  }
 		  | factor { $$ = $1; }
 		  ;
 
@@ -426,16 +460,17 @@ factor    : Int
 				  }
 				  else
 				  {
-					 yyerrok(); Console.WriteLine("wrong instruction"); Compiler.errors++; YYACCEPT;
+					 yyerrok(); Console.WriteLine("line {0}: wrong instruction",Compiler.lineno); Compiler.errors++; 
 				  }
 		  
                }
 			| True { $$ = '1'; Compiler.EmitCode("ldc.i4 1"); Compiler.EmitCode(""); }
 			| False { $$ = '0'; Compiler.EmitCode("ldc.i4 0"); Compiler.EmitCode(""); }
-		  
 			| OpenPar asn ClosePar
 			   { $$ = $2; }
           ;
+
+
 
 %%
 
@@ -447,6 +482,11 @@ List<string> variables = new List<string>();
 
 private char BinaryOpGenCode(Tokens t, char type1, char type2)
     {
+	List<char> notAllowed = new List<char>{ '0','1','b'};
+	if(notAllowed.Contains(type1) || notAllowed.Contains(type2))
+	{
+		yyerrok(); Console.WriteLine("line {0}: mismatched types",Compiler.lineno); Compiler.errors++;
+	}
     char type = ( type1=='i' && type2=='i' ) ? 'i' : 'd' ;
     if ( type1!=type )
         {
@@ -476,7 +516,7 @@ private char BinaryOpGenCode(Tokens t, char type1, char type2)
             Compiler.EmitCode("div");
             break;
         default:
-            Console.WriteLine($"  line {lineno,3}:  internal gencode error");
+            Console.WriteLine($"line {lineno,3}:  internal gencode error");
             ++Compiler.errors;
             break;
         }

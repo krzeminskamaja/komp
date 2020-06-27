@@ -25,91 +25,55 @@ ldc.i4 0
 stloc i_b
 
 ldc.i4 1
+dup
 stloc i_a
+pop
 ldc.i4 1
+dup
 stloc i_b
-IL_1859776628: nop
+pop
+IL_1335548242: nop
 ldloc i_a
 ldc.i4 10
 cgt
 ldc.i4 0
 ceq
 
-brfalse IL_1995133554
+brfalse IL_1793493100
 ldloc i_a
 call void [mscorlib]System.Console::Write(int32)
 
-IL_812059412: nop
-ldloc i_b
-ldc.i4 2
-clt
-
-brfalse IL_1248775512
-ldstr "wewnatrz"
-call void [mscorlib]System.Console::Write(string)
-
-ldloc i_b
-ldc.i4 1
-add
-stloc i_b
-br IL_812059412
-IL_1248775512: nop
-ldloc i_b
-ldc.i4 1
-sub
-stloc i_b
-ldstr "\n"
-call void [mscorlib]System.Console::Write(string)
-
 ldloc i_a
 ldc.i4 1
 add
+dup
 stloc i_a
-br IL_1859776628
-IL_1995133554: nop
+pop
+br IL_1335548242
+IL_1793493100: nop
 ldc.i4 1
+dup
 stloc i_a
-ldc.i4 1
-stloc i_b
-IL_1085885983: nop
+pop
+IL_1614380638: nop
 ldloc i_a
 ldc.i4 10
 cgt
 ldc.i4 0
 ceq
 
-brfalse IL_1248972688
+brfalse IL_1330369771
 ldloc i_a
 call void [mscorlib]System.Console::Write(int32)
 
-IL_787937187: nop
-ldloc i_b
-ldc.i4 2
-clt
-
-brfalse IL_865180650
-ldstr "wewnatrz"
-call void [mscorlib]System.Console::Write(string)
-
-ldloc i_b
-ldc.i4 1
-add
-stloc i_b
-br IL_787937187
-IL_865180650: nop
-ldloc i_b
-ldc.i4 1
-sub
-stloc i_b
-ldstr "\n"
-call void [mscorlib]System.Console::Write(string)
-
 ldloc i_a
 ldc.i4 1
 add
+dup
 stloc i_a
-br IL_1085885983
-IL_1248972688: nop
+pop
+br IL_1614380638
+IL_1330369771: nop
 leave EndMain
 }
 catch [mscorlib]System.Exception

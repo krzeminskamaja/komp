@@ -6,27 +6,13 @@ program{
 	while (a <= 10)
 	{
 		write a;
-		while(b<2)
-		{	
-			write "wewnatrz";
-			b = b+1;
-		}
-		b = b-1;
-		write "\n";
 		a = a + 1;
 	}
-	a = 1;
-	b = 1;
+	a=1;
 	while (a <= 10)
 	{
 		write a;
-		while(b<2)
-		{	
-			write "wewnatrz";
-			b = b+1;
-		}
-		b = b-1;
-		write "\n";
 		a = a + 1;
 	}
+	
 }

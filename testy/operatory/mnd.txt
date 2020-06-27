@@ -1,0 +1,5 @@
+program{
+	bool a;
+	a = 8*8+9*9 < 1;
+	write a;
+}

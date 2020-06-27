@@ -6,6 +6,7 @@ using GardensPoint;
 
 public class Compiler
 {
+    public static Random r = new Random();
     public static int errors = 0;
     public static int emitNo = 0;
     public static HashSet<int> labelSet = new HashSet<int>();
@@ -19,6 +20,8 @@ public class Compiler
     public static List<string> labelWhileAfter = new List<string>();
     public static int licznikPetli = -1;
     public static List<string> source;
+    public static int lineno = 1;
+    public static int maxStack = 128;
 
     // arg[0] określa plik źródłowy
     // pozostałe argumenty są ignorowane
@@ -62,10 +65,11 @@ public class Compiler
             Console.WriteLine("  compilation successful\n");
         else
         {
+            Console.WriteLine("compilation failed");
             Console.WriteLine($"\n  {errors} errors detected\n");
             File.Delete(file + ".il");
         }
-        return errors == 0 ? 0 : 2;
+        return (errors == 0 && czySparsowano) ? 0 : 2;
     }
 
     public static void EmitCode(string instr = null)

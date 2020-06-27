@@ -1,0 +1,4 @@
+program{
+	if(3-2)
+		write "hej";
+}

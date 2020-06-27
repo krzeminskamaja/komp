@@ -16,53 +16,47 @@ stloc temp
 ldc.i4 0
 stloc tempInt
 
-.locals init (int32 i_a)
-ldc.i4 0
-stloc i_a
-
-.locals init (float64 d_b)
+.locals init (float64 d_x)
 ldc.r8 0
-stloc d_b
+stloc d_x
 
-ldc.r8 7.8
-conv.i4
-ldc.r8 9.9
-conv.i4
+.locals init (float64 d_y)
+ldc.r8 0
+stloc d_y
+
+ldc.r8 0.5
+dup
+stloc d_x
+pop
+ldc.r8 0.2
+dup
+stloc d_y
+pop
+ldloc d_x
+ldloc d_x
+mul
+ldloc d_y
+ldloc d_y
+mul
 add
 ldc.i4 1
+conv.r8
+cgt
+ldc.i4 0
+ceq
 
-conv.i4
+brfalse IL_1183710634
+ldloc d_x
+ldc.i4 1
+conv.r8
 add
 dup
-stloc i_a
-ldc.i4 1
-
-conv.r8
-dup
-stloc d_b
-ldloc i_a
-call void [mscorlib]System.Console::Write(int32)
-
-ldstr "\n"
-call void [mscorlib]System.Console::Write(string)
-
-ldloc d_b
-stloc temp
-call class [mscorlib]System.Globalization.CultureInfo [mscorlib]System.Globalization.CultureInfo::get_InvariantCulture()
-ldstr "{0:0.000000}"
-ldloc temp
-box [mscorlib]System.Double
-call string [mscorlib]System.String::Format(class [mscorlib]System.IFormatProvider,string, object)
-call void [mscorlib]System.Console::Write(string)
-
-ldstr "\n"
-call void [mscorlib]System.Console::Write(string)
-
-ldloc i_a
-conv.r8
-dup
-stloc d_b
-ldloc d_b
+stloc d_x
+pop
+br IL_1511599278
+IL_1183710634: nop 
+IL_1511599278: nop 
+ldloc d_x
 stloc temp
 call class [mscorlib]System.Globalization.CultureInfo [mscorlib]System.Globalization.CultureInfo::get_InvariantCulture()
 ldstr "{0:0.000000}"

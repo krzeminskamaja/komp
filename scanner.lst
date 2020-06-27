@@ -4,7 +4,7 @@
 // ==========================================================================
 //  Version:  1.2.2
 //  Machine:  DESKTOP-1T6954A
-//  DateTime: 25.06.2020 14:56:42
+//  DateTime: 27.06.2020 11:25:03
 //  UserName: Maya
 // ==========================================================================
 
@@ -13,10 +13,13 @@
 %using QUT.Gppg;
 %namespace GardensPoint
 
-Cmt ^"//".*[\n]$
+Cmt //\.*[\n]
+Dou (([1-9][0-9]*)|[0])+.[0-9]+
+//--^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// Error: Expected end-of-line here
+// --------------------------------
 Int [0-9]+
 Str \"([^\\\"\n]|\\.)*\"
-Dou  [0-9]+\.[0-9]+
 Var [a-zA-Z]+[0-9]*
 
 
@@ -24,19 +27,28 @@ Var [a-zA-Z]+[0-9]*
 %%
 
 {Cmt}				{  }
-//^^^
-// Error: Symbols '^' and '$' can only occur at the ends of patterns
-// -----------------------------------------------------------------
 {Int}				{ yylval.val=yytext; return (int)Tokens.Int; }
 {Dou}				{ yylval.val=yytext; return (int)Tokens.Dou; }
+//^^
+// Error: Unknown lexical category <Dou> 
+// --------------------------------------
 {Str}				{ yylval.val=yytext; return (int)Tokens.Str; }
+"while"				{ return (int)Tokens.While; }
 "int"				{ return (int)Tokens.IntT; }
 "double"			{ return (int)Tokens.DouT; }
 "bool"				{ return (int)Tokens.BooT; }
+"read"				{ return (int)Tokens.Read; }
+"&"					{ return (int)Tokens.BitAnd; }
+"|"					{ return (int)Tokens.BitSum; }
+"~"					{ return (int)Tokens.BitNeg; }
+"!"					{ return (int)Tokens.Not; }
 "program"			{ return (int)Tokens.Program; }
 "write"				{ return (int)Tokens.Print; }
 "true"				{ return (int)Tokens.True; }
 "false"				{ return (int)Tokens.False; }
+"if"				{ return (int)Tokens.If; }
+"else"				{ return (int)Tokens.Else;}
+"return"			{ return (int)Tokens.Return;}
 "{"					{ return (int)Tokens.OpenBr; }
 "}"					{ return (int)Tokens.CloseBr; }
 ";"					{ return (int)Tokens.Sc; }
