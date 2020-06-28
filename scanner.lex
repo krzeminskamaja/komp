@@ -3,8 +3,8 @@
 %namespace GardensPoint
 
 Cmt "//".*[\n]
-Dou (([1-9][0-9]*)|[0])+\.[0-9]+
-Int ([1-9][0-9]*)|[0]
+Int "0"|([1-9][0-9]*)
+Dou ("0"|[1-9][0-9]*)\.[0-9]+
 Str \"([^\\\"\n]|\\.)*\"
 Var [a-zA-Z]+[a-zA-Z0-9]*
 
@@ -56,3 +56,4 @@ Var [a-zA-Z]+[a-zA-Z0-9]*
 "\r"				{ }
 "\t"				{ }
 {Var}				{ yylval.val=yytext; return (int)Tokens.Var; }
+.					{ return (int)Tokens.Error; }

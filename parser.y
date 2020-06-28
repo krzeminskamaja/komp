@@ -10,7 +10,7 @@ public string  val;
 public char    type;
 }
 
-%token  Program OpenBr CloseBr EOF Print Sc IntT DouT BooT Eq True False Plus OpenPar ClosePar Minus Mult Div LogSum LogInt LE GE LT GT EQ NE If Else Return While Read BitSum BitAnd BitNeg Not
+%token  Program OpenBr CloseBr EOF Print Sc IntT DouT BooT Eq True False Plus OpenPar ClosePar Minus Mult Div LogSum LogInt LE GE LT GT EQ NE If Else Return While Read BitSum BitAnd BitNeg Not Error
 %type <type> content print dek idef exp asn term factor deklar blok ifs log single return els loop read bit una inside 
 %token <val> Int Str Dou Var 
 
@@ -68,29 +68,35 @@ read	  : Read Var {
 							}
 		  ;
 ifs		  : If OpenPar log ClosePar {  
-									if( $3!='b' && $3!='0' && $3!='1'){ SignalError(2); }
-									Compiler.licznikIf++;
-									int n = GenerateNewLabel();
-									Compiler.labelIf.Add("IL_"+n.ToString());
-									n = GenerateNewLabel();
-									Compiler.labelEndIf.Add("IL_"+n.ToString());
-									Compiler.EmitCode("brfalse {0}",Compiler.labelIf[Compiler.licznikIf]);
-									} 
-			single					{ 
-									Compiler.EmitCode("br {0}", Compiler.labelEndIf[Compiler.licznikIf]); 
-									} 
-			els						{ 
-									Compiler.licznikIf--; Compiler.labelIf.RemoveAt(Compiler.labelIf.Count - 1); Compiler.labelEndIf.RemoveAt(Compiler.labelEndIf.Count - 1); 
+									if( $3!='b' && $3!='0' && $3!='1')
+									{ 
+										SignalError(2);
 									}
+										Compiler.licznikIf++;
+										int n = GenerateNewLabel();
+										Compiler.labelIf.Add("IL_"+n.ToString());
+										n = GenerateNewLabel();
+										Compiler.labelEndIf.Add("IL_"+n.ToString());
+										Compiler.EmitCode("brfalse {0}",Compiler.labelIf[Compiler.licznikIf]);
+									} 
+			single { 
+				Compiler.EmitCode("br {0}", Compiler.labelEndIf[Compiler.licznikIf]); 
+					} 
+			els { 
+				Compiler.licznikIf--; 
+				Compiler.labelIf.RemoveAt(Compiler.labelIf.Count - 1); 
+				Compiler.labelEndIf.RemoveAt(Compiler.labelEndIf.Count - 1); 
+			}
 		  ;
 els		  : Else { 
 					Compiler.EmitCode("{0}: nop ",Compiler.labelIf[Compiler.licznikIf]); 
-				 }   
+				}   
 			single { 
-					Compiler.EmitCode("{0}: nop ",Compiler.labelEndIf[Compiler.licznikIf]);  
-					}
+				Compiler.EmitCode("{0}: nop ",Compiler.labelEndIf[Compiler.licznikIf]);  
+				}
 		  | { 
-					Compiler.EmitCode("{0}: nop ",Compiler.labelIf[Compiler.licznikIf]);  Compiler.EmitCode("{0}: nop ",Compiler.labelEndIf[Compiler.licznikIf]); 
+				Compiler.EmitCode("{0}: nop ",Compiler.labelIf[Compiler.licznikIf]);  
+				Compiler.EmitCode("{0}: nop ",Compiler.labelEndIf[Compiler.licznikIf]); 
 			}  
 		  ;
 loop	  : While { 
@@ -110,7 +116,8 @@ loop	  : While {
 									Compiler.labelWhileAfter.RemoveAt(Compiler.labelWhileAfter.Count - 1);
 									Compiler.labelWhileBefore.RemoveAt(Compiler.labelWhileBefore.Count - 1);
 									} 
-									Compiler.EmitCode("brfalse {0}",Compiler.labelWhileAfter[Compiler.licznikPetli]); 
+									else
+										Compiler.EmitCode("brfalse {0}",Compiler.labelWhileAfter[Compiler.licznikPetli]); 
 									} 
 			single { 
 									Compiler.EmitCode("br {0}",Compiler.labelWhileBefore[Compiler.licznikPetli]); 
@@ -122,9 +129,9 @@ loop	  : While {
 							;
 return    : Return Sc {  
 									int n = GenerateNewLabel();
-								    Compiler.labelReturn= "IL_"+n.ToString();
-									Console.WriteLine(Compiler.labelReturn); 
-									Compiler.EmitCode("br {0}",Compiler.labelReturn); 
+									string label = "IL_"+n.ToString();
+								    Compiler.labelReturn.Add(label);
+									Compiler.EmitCode("br {0}",label); 
 					  }
 		  ;
 single	  : blok
@@ -192,59 +199,38 @@ dek		  : idef Var Sc {
 								Compiler.EmitCode(""); 
 								variables.Add("tempInt");
 							}
-							string name = "";
-							switch($1)
-							{
-								case 'i':
-									name = "i_"+$2;
-									if(!variables.Contains(name))
+							string namei = "i_"+$2, nameb = "b_"+$2, named="d_"+$2;;
+								if(!variables.Contains(namei) && !variables.Contains(nameb) && !variables.Contains(named))
+								{
+									if($1=='i')
 									{
 										Compiler.EmitCode(".locals init (int32 i_{0})",$2);
 										Compiler.EmitCode("ldc.i4 {0}",0);
 										Compiler.EmitCode("stloc i_{0}",$2);
 										Compiler.EmitCode("");
-										variables.Add(name);
-										Console.WriteLine("dodane variable {0}",name);
+										variables.Add(namei);
 									}
-									else
+									else if($1=='b')
+									{
+										Compiler.EmitCode(".locals init (bool b_{0})",$2);
+										Compiler.EmitCode("ldc.i4 {0}",0);
+										Compiler.EmitCode("stloc b_{0}",$2);
+										Compiler.EmitCode("");
+										variables.Add(nameb);
+									}
+									else if($1=='d'){
+										Compiler.EmitCode(".locals init (float64 d_{0})",$2);
+										Compiler.EmitCode("ldc.r8 {0}",0);
+										Compiler.EmitCode("stloc d_{0}",$2);
+										Compiler.EmitCode("");
+										variables.Add(named);
+									}
+								}
+								else
 									{
 										SignalError(5);
 									}
-									break;
-								case 'b':
-									name = "b_"+$2;
-									if(!variables.Contains(name))
-									{
-									Compiler.EmitCode(".locals init (bool b_{0})",$2);
-									Compiler.EmitCode("ldc.i4 {0}",0);
-									Compiler.EmitCode("stloc b_{0}",$2);
-									Compiler.EmitCode("");
-									variables.Add(name);
-									Console.WriteLine("dodane variable {0}",name);
-									}
-									else
-									{
-										SignalError(5);
-									}
-									break;
-								case 'd':
-									name = "d_"+$2;
-									if(!variables.Contains(name)){
-									Compiler.EmitCode(".locals init (float64 d_{0})",$2);
-									Compiler.EmitCode("ldc.r8 {0}",0);
-									Compiler.EmitCode("stloc d_{0}",$2);
-									Compiler.EmitCode("");
-									variables.Add(name);
-									Console.WriteLine("dodane variable {0}",name);
-									}
-									else
-									{
-										SignalError(5);
-									}
-									break;
-								default:
-									break;
-									}}
+						}
 		  ;
 idef	  : IntT { 
 					$$ = 'i';
@@ -259,7 +245,6 @@ idef	  : IntT {
 
 asn	  :  Var Eq asn { 
 						string namei="i_"+$1, named="d_"+$1, nameb = "b_"+$1;
-						Console.WriteLine("$3 to {0}",$3);
 						if(variables.Contains(namei) && $3=='d')
 						{
 							 SignalError(6);
@@ -291,7 +276,6 @@ asn	  :  Var Eq asn {
 		  
 		  | log { 
 					$$ = $1;  
-					Console.WriteLine("Przypisano w log {0}",$$);  
 				}
 		  ;
 log		  : log {	
@@ -299,66 +283,85 @@ log		  : log {
 					{		
 						SignalError(8);
 					}
-					int n = GenerateNewLabel();
-					Compiler.labelFalse= "IL_"+n.ToString();
-					Console.WriteLine(Compiler.labelFalse);
-					Compiler.EmitCode("brfalse {0}",Compiler.labelFalse);
-					} 
+					else
+					{
+						Compiler.licznikLog++;
+						int n = GenerateNewLabel();
+						Compiler.labelFalse.Add("IL_"+n.ToString());
+						Compiler.EmitCode("brfalse {0}",Compiler.labelFalse[Compiler.licznikLog]);
+						n = GenerateNewLabel();
+						Compiler.labelTrue.Add("IL_"+n.ToString());
+					}
+				} 
 			LogInt  rel 
 					{ 
-					if($4.type!='b' && $4.type!='0' && $4.type!='1')
-					{		
-						SignalError(8);
-					}
-					Console.WriteLine("$ w sumie jest rowne {0}",$4.type);
-					int n = GenerateNewLabel();
-					Compiler.labelTrue= "IL_"+n.ToString();
-					Compiler.EmitCode("brfalse {0}", Compiler.labelFalse); 
-					Compiler.EmitCode("ldc.i4 1"); 
-					Compiler.EmitCode("br {0}",Compiler.labelTrue);
-					Compiler.EmitCode("{0}: ldc.i4 0",Compiler.labelFalse);
-					if(!variables.Contains("tempInt"))
-					{
-						 Compiler.EmitCode(".locals init(int32 tempInt)");Compiler.EmitCode("ldc.i4 {0}",0);
-					     Compiler.EmitCode("stloc tempInt");Compiler.EmitCode(""); variables.Add("tempInt");
-					}
-					Compiler.EmitCode("{0}: nop",Compiler.labelTrue);
-					$$ = 'b';
+						if($4.type!='b' && $4.type!='0' && $4.type!='1')
+						{		
+							SignalError(8);
+						}
+						else
+						{
+							Compiler.EmitCode("brfalse {0}", Compiler.labelFalse[Compiler.licznikLog]); 
+							Compiler.EmitCode("ldc.i4 1"); 
+							Compiler.EmitCode("br {0}",Compiler.labelTrue[Compiler.licznikLog]);
+							Compiler.EmitCode("{0}: ldc.i4 0",Compiler.labelFalse[Compiler.licznikLog]);
+							if(!variables.Contains("tempInt"))
+							{
+								 Compiler.EmitCode(".locals init(int32 tempInt)");Compiler.EmitCode("ldc.i4 {0}",0);
+								 Compiler.EmitCode("stloc tempInt");Compiler.EmitCode(""); variables.Add("tempInt");
+							}
+							Compiler.EmitCode("{0}: nop",Compiler.labelTrue[Compiler.licznikLog]);
+							Compiler.labelTrue.RemoveAt(Compiler.labelTrue.Count - 1);
+							Compiler.labelFalse.RemoveAt(Compiler.labelFalse.Count - 1);
+							Compiler.licznikLog--;
+							$$ = 'b';
+						}
 					}
 		  | log {	
 					if($1=='i' ||$1=='d')
 					{		
 						SignalError(8);
 					}
-					int n = GenerateNewLabel();
-					Compiler.labelTrue = "IL_"+n.ToString();
-					Compiler.EmitCode("brtrue {0}",Compiler.labelTrue); 
+					else
+					{
+						Compiler.licznikLog++;
+						int n = GenerateNewLabel();
+						Compiler.labelTrue.Add("IL_"+n.ToString());
+						Compiler.EmitCode("brtrue {0}",Compiler.labelTrue[Compiler.licznikLog]); 
+						n = GenerateNewLabel();
+						Compiler.labelFalse.Add("IL_"+n.ToString());
+					}
 					}  
 			LogSum rel 
 				{ 
 					if($4.type!='b' && $4.type!='0' && $4.type!='1')
 					{		
 						SignalError(8);
+						Compiler.licznikLog--;
+						Compiler.labelTrue.RemoveAt(Compiler.labelTrue.Count - 1);
+						Compiler.labelFalse.RemoveAt(Compiler.labelFalse.Count - 1);
 					}
-					Console.WriteLine("$ w sumie jest rowne {0}",$4.type);
-					int n = GenerateNewLabel();
-					Compiler.labelFalse = "IL_"+n.ToString();
-					Compiler.EmitCode("brtrue {0}",Compiler.labelTrue); 
-					Compiler.EmitCode("ldc.i4 0"); 
-					Compiler.EmitCode("br {0}",Compiler.labelFalse);
-					Compiler.EmitCode("{0}: ldc.i4 1",Compiler.labelTrue);
-					if(!variables.Contains("tempInt"))
+					else
 					{
-						 Compiler.EmitCode(".locals init(int32 tempInt)");Compiler.EmitCode("ldc.i4 {0}",0);
-					     Compiler.EmitCode("stloc tempInt");Compiler.EmitCode(""); variables.Add("tempInt");
+						Compiler.EmitCode("brtrue {0}",Compiler.labelTrue[Compiler.licznikLog]); 
+						Compiler.EmitCode("ldc.i4 0"); 
+						Compiler.EmitCode("br {0}",Compiler.labelFalse[Compiler.licznikLog]);
+						Compiler.EmitCode("{0}: ldc.i4 1",Compiler.labelTrue[Compiler.licznikLog]);
+						if(!variables.Contains("tempInt"))
+						{
+							 Compiler.EmitCode(".locals init(int32 tempInt)");Compiler.EmitCode("ldc.i4 {0}",0);
+							 Compiler.EmitCode("stloc tempInt");Compiler.EmitCode(""); variables.Add("tempInt");
+						}
+						Compiler.EmitCode("{0}: nop", Compiler.labelFalse[Compiler.licznikLog]);
+						$$ = 'b';
+						Compiler.licznikLog--;
+						Compiler.labelTrue.RemoveAt(Compiler.labelTrue.Count - 1);
+						Compiler.labelFalse.RemoveAt(Compiler.labelFalse.Count - 1);
 					}
-					Compiler.EmitCode("{0}: nop", Compiler.labelFalse);
-					$$ = 'b';
 					}
 
 		  | rel { 
 					$$ = $1.type;  
-					Console.WriteLine("Przypisano w rel {0}",$$); 
 				}
 		  ;
 rel		  : rel { 
@@ -433,6 +436,9 @@ rel		  : rel {
 					if($1.type=='i')Compiler.EmitCode("conv.r8"); 
 				} 
 			EQ exp { 
+					List<char> boolList = new List<char>{'0','1','b'};
+					if((boolList.Contains($1.type) && !boolList.Contains($4))||(!boolList.Contains($1.type) && boolList.Contains($4)))
+						SignalError(17);
 					if($4=='i')
 						Compiler.EmitCode("conv.r8"); 
 					Compiler.EmitCode("ceq"); 
@@ -444,6 +450,9 @@ rel		  : rel {
 						Compiler.EmitCode("conv.r8"); 
 				} 
 			NE exp {  
+					List<char> boolList = new List<char>{'0','1','b'};
+					if((boolList.Contains($1.type) && !boolList.Contains($4))||(!boolList.Contains($1.type) && boolList.Contains($4)))
+						SignalError(18);
 					if($4=='i')
 						Compiler.EmitCode("conv.r8"); 
 					Compiler.EmitCode("ceq"); 
@@ -454,7 +463,6 @@ rel		  : rel {
 					}
 		  | exp { 
 					$$.type = $1; 
-					Console.WriteLine("Przypisano w exp {0}",$$.type); 
 				}
 		  ;
 
@@ -627,7 +635,9 @@ Dictionary<int,string> errors = new Dictionary<int,string>{
 	{13,"wrong instruction - cannot perform bitwise operation on non-int operands"},
 	{14,"wrong instruction - unary minus only on int or double operands"},
 	{15,"wrong instruction - cannot perform bitwise negation on non-boolean operands"},
-	{16,"wrong instruction"}
+	{16,"wrong instruction"},
+	{17,"wrong instruction - equal relation not both types bool"},
+	{18,"wrong instruction - not equal relation not both types bool"}
 };
 
 List<string> variables = new List<string>();
@@ -637,7 +647,7 @@ public Parser(Scanner scanner) : base(scanner) { }
 public int GenerateNewLabel()
 {
 	int n = 0;
-	while(Compiler.labelSet.Contains(n) || n<1)
+	while(Compiler.labelSet.Contains(n))
 		n=Compiler.r.Next();
 	Compiler.labelSet.Add(n);
 	return n;
@@ -658,7 +668,7 @@ private char BinaryOpGenCode(Tokens t, char type1, char type2)
 	List<char> notAllowed = new List<char>{ '0','1','b'};
 	if(notAllowed.Contains(type1) || notAllowed.Contains(type2))
 	{
-		yyerrok(); Console.WriteLine("line {0}: mismatched types",Compiler.lineno); Compiler.errors++;
+		yyerrok(); Compiler.errors++;
 	}
     char type = ( type1=='i' && type2=='i' ) ? 'i' : 'd' ;
     if ( type1!=type )
@@ -691,7 +701,6 @@ private char BinaryOpGenCode(Tokens t, char type1, char type2)
             Compiler.EmitCode("div");
             break;
         default:
-            Console.WriteLine($"line {lineno,3}:  internal gencode error");
             ++Compiler.errors;
             break;
         }

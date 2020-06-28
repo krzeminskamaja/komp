@@ -4,7 +4,7 @@
 // ==========================================================================
 //  Version:  1.2.2
 //  Machine:  DESKTOP-1T6954A
-//  DateTime: 27.06.2020 11:25:03
+//  DateTime: 28.06.2020 20:47:23
 //  UserName: Maya
 // ==========================================================================
 
@@ -13,25 +13,40 @@
 %using QUT.Gppg;
 %namespace GardensPoint
 
-Cmt //\.*[\n]
-Dou (([1-9][0-9]*)|[0])+.[0-9]+
-//--^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// Error: Expected end-of-line here
-// --------------------------------
-Int [0-9]+
+Cmt "//".*[\n]
+Int 0|([1-9][0-9]*)
+Dou ("0"|[1-9][0-9]*)\.[0-9]+
 Str \"([^\\\"\n]|\\.)*\"
-Var [a-zA-Z]+[0-9]*
+Var [a-zA-Z]+[a-zA-Z0-9]*
 
 
 
 %%
 
-{Cmt}				{  }
+{Cmt}				{ Compiler.lineno++; }
+.					{ return (int)Tokens.Error; }
+// Warning: This pattern always overrides ""*"" 
+// Warning: This pattern always overrides ""/"" 
+// Warning: This pattern always overrides ""("" 
+// Warning: This pattern always overrides ""="" 
+// Warning: This pattern always overrides ""+"" 
+// Warning: This pattern always overrides ""-"" 
+// Warning: This pattern always overrides "" "" 
+// Warning: This pattern always overrides ""\r"" 
+// Warning: This pattern always overrides ""\t"" 
+// Warning: This pattern always overrides "")"" 
+// Warning: This pattern always overrides ""<"" 
+// Warning: This pattern always overrides "">"" 
+// Warning: This pattern always overrides "";"" 
+// Warning: This pattern always overrides ""}"" 
+// Warning: This pattern always overrides ""~"" 
+// Warning: This pattern always overrides ""{"" 
+// Warning: This pattern always overrides ""!"" 
+// Warning: This pattern always overrides ""&"" 
+// Warning: This pattern always overrides ""|"" 
+// ----------------------------------------------
 {Int}				{ yylval.val=yytext; return (int)Tokens.Int; }
 {Dou}				{ yylval.val=yytext; return (int)Tokens.Dou; }
-//^^
-// Error: Unknown lexical category <Dou> 
-// --------------------------------------
 {Str}				{ yylval.val=yytext; return (int)Tokens.Str; }
 "while"				{ return (int)Tokens.While; }
 "int"				{ return (int)Tokens.IntT; }
@@ -39,9 +54,17 @@ Var [a-zA-Z]+[0-9]*
 "bool"				{ return (int)Tokens.BooT; }
 "read"				{ return (int)Tokens.Read; }
 "&"					{ return (int)Tokens.BitAnd; }
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
 "|"					{ return (int)Tokens.BitSum; }
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
 "~"					{ return (int)Tokens.BitNeg; }
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
 "!"					{ return (int)Tokens.Not; }
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
 "program"			{ return (int)Tokens.Program; }
 "write"				{ return (int)Tokens.Print; }
 "true"				{ return (int)Tokens.True; }
@@ -50,27 +73,59 @@ Var [a-zA-Z]+[0-9]*
 "else"				{ return (int)Tokens.Else;}
 "return"			{ return (int)Tokens.Return;}
 "{"					{ return (int)Tokens.OpenBr; }
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
 "}"					{ return (int)Tokens.CloseBr; }
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
 ";"					{ return (int)Tokens.Sc; }
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
 "="					{ return (int)Tokens.Eq; }
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
 "+"					{ return (int)Tokens.Plus; }
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
 "-"					{ return (int)Tokens.Minus; }
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
 "*"					{ return (int)Tokens.Mult; }
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
 "/"					{ return (int)Tokens.Div; }
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
 "("					{ return (int)Tokens.OpenPar; }
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
 ")"					{ return (int)Tokens.ClosePar; }
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
 "||"				{ return (int)Tokens.LogSum; }
 "&&"				{ return (int)Tokens.LogInt; }
 "<"					{ return (int)Tokens.LE; }
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
 ">"					{ return (int)Tokens.GE; }
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
 "<="				{ return (int)Tokens.LT; }
 ">="				{ return (int)Tokens.GT; }
 "=="				{ return (int)Tokens.EQ; }
 "!="				{ return (int)Tokens.NE; }
 <<EOF>>				{ return (int)Tokens.EOF; }
 " "					{ }
-"\n"				{ }
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
+"\n"				{ Compiler.lineno++; }
 "\r"				{ }
+//^^
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
 "\t"				{ }
+//^^
+// Warning: This pattern always overridden by "." 
+// -----------------------------------------------
 {Var}				{ yylval.val=yytext; return (int)Tokens.Var; }// ==========================================================================
 

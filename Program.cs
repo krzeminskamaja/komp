@@ -10,12 +10,13 @@ public class Compiler
     public static int errors = 0;
     public static int emitNo = 0;
     public static HashSet<int> labelSet = new HashSet<int>();
-    public static string labelTrue = "";
-    public static string labelFalse = "";
+    public static List<string> labelTrue = new List<string>();
+    public static List<string> labelFalse = new List<string>();
+    public static int licznikLog = -1;
     public static int licznikIf = -1;
     public static List<string> labelIf = new List<string>();
     public static List<string> labelEndIf = new List<string>();
-    public static string labelReturn = "";
+    public static List<string> labelReturn = new List<string>();
     public static List<string> labelWhileBefore = new List<string>();
     public static List<string> labelWhileAfter = new List<string>();
     public static int licznikPetli = -1;
@@ -34,8 +35,8 @@ public class Compiler
             file = args[0];
         else
         {
-            Console.Write("\nsource file:  ");
-            file = Console.ReadLine();
+            Console.Write("Giva path as argument");
+            return 2;
         }
         try
         {
@@ -56,11 +57,21 @@ public class Compiler
         Console.WriteLine();
         sw = new StreamWriter(file + ".il");
         GenProlog();
-        bool czySparsowano=parser.Parse();
-        GenReturnLabel();
-        GenEpilog();
-        sw.Close();
-        source.Close();
+        bool czySparsowano = false;
+        try
+        {
+            czySparsowano = parser.Parse();
+            GenReturnLabel();
+            GenEpilog();
+            sw.Close();
+            source.Close();
+        }
+        catch
+        {
+            Console.WriteLine("compilation failed");
+            return 2;
+        }
+       
         if (errors == 0 && czySparsowano)
             Console.WriteLine("  compilation successful\n");
         else
@@ -87,7 +98,7 @@ public class Compiler
 
     private static void GenReturnLabel()
     {
-       if(labelReturn!="") EmitCode("{0}: nop", labelReturn);
+       foreach(var l in labelReturn) EmitCode("{0}: nop", l);
     }
 
     private static void GenProlog()
