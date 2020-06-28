@@ -6,3 +6,7 @@ C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Debug\kompilatorXDD.c
 C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Debug\kompilatorXDD.csproj.CoreCompileInputs.cache
 C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Debug\kompilatorXDD.exe
 C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Debug\kompilatorXDD.pdb
+C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\bin\Debug\kompilatorXDD.exe.manifest
+C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\bin\Debug\kompilatorXDD.application
+C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Debug\kompilatorXDD.exe.manifest
+C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Debug\kompilatorXDD.application

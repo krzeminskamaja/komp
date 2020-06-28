@@ -1,0 +1,6 @@
+program{
+	double d;
+	int k;
+	d = d + (int)(k != 0);
+	write d;
+}
