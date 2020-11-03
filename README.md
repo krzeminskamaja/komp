@@ -39,12 +39,13 @@ przejścia do nowej linii).
 Program rozpoczyna się od słowa kluczowego program, po którym następują ujęte w nawiasy
 klamrowe ciąg deklaracji i ciąg instrukcji.
 Przykład:
-program
+```program
  {
  int a;
  a = 3;
  write a+1;
  }
+ ```
 Uwaga: zarówno ciąg deklaracji jak i instrukcji mogą być puste, czyli poprawny jest program
 program {} 
 3) Deklaracje
@@ -55,9 +56,11 @@ Wartości logiczne reprezentowane są jako liczby całkowite 1 (true) i 0 (false
 Deklaracje nie zawierają inicjalizatorów, ale zmienne inicjowane są niejawnie wartościami zerowymi
 odpowiedniego typu.
 Przykłady:
+```
 int n;
 double wynik;
 bool isOK;
+```
 Uwaga 1: Wszystkie zmienne muszą być zadeklarowane, próba użycia niezadeklarowanej zmiennej
 powinna powodować błąd kompilacji z komunikatem "undeclared variable"
 Uwaga 2: Nazwy zmiennych (identyfikatory) muszą być unikalne, próba ponownej deklaracji
@@ -69,14 +72,18 @@ A) Instrukcja blokowa to ciąg instrukcji ujętych w nawiasy klamrowe, jest uży
 składnia języka wymaga pojedynczej instrukcji (np. jako instrukcje wewnętrzne w if lub while),
 a należy wykonać cały ciąg operacji.
 Przykład:
+```
 { read n; i = i+n; }
+```
 Uwaga: dozwolona jest instrukcja blokowa z pustym ciągiem instrukcji postaci { }.
 B) Instrukcja wyrażeniowa to dowolne wyrażenie, po którym następuje średnik (analogicznie jak w
 języku C/C++).
+```
 Przykłady:
 n = 1;
 x+y;
 ( a>=0 && a<10 ) || b>3 ;
+```
 Uwaga: wyrażenia opisane będą w dalszej części dokumentu.
 C) Instrukcja warunkowa ma dwie postaci.
 Postać "z elsem" rozpoczyna się od słowa kluczowego if, po którym następuje ujęte z nawiasy
@@ -87,23 +94,26 @@ instrukcja następująca bezpośrednio po nim, a jeśli warunek jest fałszywy t
 instrukcja po słowie kluczowym else, a dla wersji "bez else" nic nie jest wykonywane).
 
 Przykłady:
+```
 if ( n > k )
  k = k*2;
 else
  k - k/2;
 if ( x==0 ) { res = 1; return; }
-
+```
 D) Instrukcja pętli rozpoczyna się od słowa kluczowego while, po którym następuje ujęte z nawiasy
 wyrażenie typu bool, a po nim instrukcja.
 Działanie instrukcji pętli jest standardowe (jeśli warunek jest prawdziwy to wykonywana jest
 następująca po nim instrukcja, a następnie warunek sprawdzany jest ponownie i tak dalej).
 Przykład:
+```
 n = 0;
 while ( n<10 )
  {
  n = n + 1;
  write n;
  }
+ ```
 E) Instrukcja wejściowa rozpoczyna się od słowa kluczowego read, po którym następuje
 identyfikator, a po nim średnik.
 W wyniku wykonania instrukcji wejściowej zmienna określona występującym i niej identyfikatorem
@@ -131,6 +141,7 @@ Uwaga 2: Postać wypisywanych wyników MUSI być dokładnie taka jak w poniższy
 
 Przykład:
 Następujący program
+```
 program
  {
  int i;
@@ -146,11 +157,13 @@ program
  write b;
  write "\n";
  }
+ ```
 Wypisuje na strumień wyjściowy
 5
 123.456000
 True
 Czyli dokładnie to samo co następujący fragment kodu w języku C#
+```
 static void Main()
  {
  int i = 5;
@@ -165,6 +178,7 @@ static void Main()
  Console.Write(b);
  Console.Write("\n");
  }
+ ```
 G) Instrukcja powrotu składa się ze słowa kluczowego return i średnika.
 Wykonanie instrukcji powrotu powoduje zakończenie programu.
 Uwaga: Dotarcie sterowania do nawiasu klamrowego kończącego blok programu automatycznie
