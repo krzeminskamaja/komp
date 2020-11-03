@@ -1,0 +1,14 @@
+program{
+	int a;
+	double b;
+	a = (int)7.8+(int)9.9+(int)true;
+	b = (double)true;
+	write a;
+	write "\n";
+	write b;
+	write "\n";
+	b=a;
+	write b;
+}
+
+//hol

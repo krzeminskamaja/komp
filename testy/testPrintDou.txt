@@ -1,0 +1,3 @@
+program{
+	print 3.2;
+}

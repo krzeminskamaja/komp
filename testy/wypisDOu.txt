@@ -1,0 +1,8 @@
+using System;
+public class Program {
+    static void Main() {
+        String s = string.Format(
+ System.Globalization.CultureInfo.InvariantCulture,
+ "{0:0.000000}",0.5);
+    }
+}

@@ -1,0 +1,8 @@
+program{
+	int a;
+	a = 10;
+	write a;
+	write "\n";
+	a = -10;
+	write a;
+}

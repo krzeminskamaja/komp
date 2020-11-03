@@ -1,0 +1,8 @@
+program{
+	true;
+	if(1>2)
+	 {write "jestem w if"; 2+3;}
+	else
+	write "jestem w else";
+		write "po if";
+}	

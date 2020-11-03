@@ -1,0 +1,12 @@
+C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\bin\Release\kompilatorXDD.exe.config
+C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\bin\Release\kompilatorXDD.exe.manifest
+C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\bin\Release\kompilatorXDD.application
+C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\bin\Release\kompilatorXDD.exe
+C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\bin\Release\kompilatorXDD.pdb
+C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\bin\Release\QUT.ShiftReduceParser.dll
+C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Release\kompilatorXDD.csproj.CoreCompileInputs.cache
+C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Release\kompilatorXDD.exe.manifest
+C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Release\kompilatorXDD.application
+C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Release\kompilatorXDD.exe
+C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Release\kompilatorXDD.pdb
+C:\Users\Maya\source\repos\kompilatorXDD\kompilatorXDD\obj\Release\kompilatorXDD.csprojResolveAssemblyReference.cache

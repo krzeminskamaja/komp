@@ -1,0 +1,9 @@
+program{
+int a;
+int b;
+{ b=4;
+  b=2;}
+{}
+write 0;
+{write b;}
+}

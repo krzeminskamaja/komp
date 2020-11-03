@@ -1,0 +1,5 @@
+program{
+	write 0;
+	write 1.2;
+	write "hola";
+}

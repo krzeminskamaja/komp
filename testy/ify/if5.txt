@@ -1,0 +1,5 @@
+program{
+	bool a;
+	if(!a)
+		return;
+}

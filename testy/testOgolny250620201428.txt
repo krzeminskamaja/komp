@@ -1,0 +1,9 @@
+program{
+	bool b;
+	int x;
+	b = 9==0 && true;
+	write b;
+	x=-9;
+	write x;
+	// hola chica
+}
